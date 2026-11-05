@@ -443,9 +443,30 @@
     // 링크 이동(target=_blank)은 <a> 태그 기본 동작으로 처리되고, 여기서는 복사만 수행합니다.
   }
 
+  // ---------- in-app browser banner ----------
+  function isKakaoInApp(){
+    try{ return navigator.userAgent.toLowerCase().indexOf("kakaotalk") > -1; }catch(e){ return false; }
+  }
+  function showInAppBanner(){
+    if (!isKakaoInApp()) return;
+    var b = document.createElement("div");
+    b.id = "inapp-banner";
+    b.style.cssText = "position:fixed;top:0;left:0;right:0;z-index:999;background:#3a2a06;color:#ffd966;padding:10px 14px;font-size:12.5px;line-height:1.5;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,.35);";
+    b.innerHTML =
+      '⚠️ 카카오톡 안에서 열람 중이에요. 공유·외부앱 연결이 막힐 수 있어요.' +
+      '<br><button id="open-ext-btn" type="button" style="margin-top:6px;padding:6px 12px;border-radius:8px;border:none;background:#ffd966;color:#3a2a06;font-weight:700;font-size:12.5px;">외부 브라우저로 열기</button>' +
+      '<button id="close-banner-btn" type="button" aria-label="닫기" style="margin-left:6px;margin-top:6px;padding:6px 10px;border-radius:8px;border:1px solid #ffd966;background:transparent;color:#ffd966;font-size:12.5px;">닫기</button>' +
+      '<div style="margin-top:4px;opacity:.85;">자동으로 안 열리면: 오른쪽 아래 "···" → "다른 브라우저로 열기"(안드로이드) / 공유 아이콘 → Safari(아이폰)</div>';
+    document.body.prepend(b);
+    document.getElementById("open-ext-btn").addEventListener("click", function(){
+      try{ location.href = "kakaotalk://web/openExternal?url=" + encodeURIComponent(location.href); }catch(e){}
+    });
+    document.getElementById("close-banner-btn").addEventListener("click", function(){ b.remove(); });
+  }
+
   // ---------- init ----------
   function init(){
-    loadMuted(); setProgress();
+    loadMuted(); setProgress(); showInAppBanner();
 
     $("sound-btn").addEventListener("click", toggleMuted);
     $("restart-btn").addEventListener("click", function(){ resetGame(true); });
