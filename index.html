@@ -173,9 +173,9 @@
       <div class="status-line" id="status-line"></div>
     </div>
     <div class="card">
-      <h2>🙏 목사님께 하고 싶은 말 <span class="muted" style="font-weight:400;font-size:12px;">(선택)</span></h2>
-      <p class="muted" style="margin-bottom:12px;">개인적으로 전하고 싶은 말이 있으면 적어줘. 목사님 문자로 바로 보내드릴게!</p>
-      <textarea id="pastor-note" placeholder="예: 목사님, 오늘 설교 듣고 이런 생각이 들었어요..."></textarea>
+      <h2>🙏 목사님께 하고 싶은 말 · 기도제목 <span class="muted" style="font-weight:400;font-size:12px;">(선택)</span></h2>
+      <p class="muted" style="margin-bottom:12px;">개인적으로 하고 싶은 말이나 기도제목이 있으면 적어줘. 목사님 문자로 바로 보내드릴게!</p>
+      <textarea id="pastor-note" placeholder="예: 목사님, 오늘 설교 듣고 이런 생각이 들었어요... / 요즘 이런 기도제목이 있어요..."></textarea>
       <div class="action-row">
         <button class="btn outline" id="btn-pastor-sms" style="margin-top:0;">📩 목사님께 문자 보내기</button>
       </div>
@@ -439,6 +439,10 @@
       }
     }
     var ok = await copyText(text);
+    if (ok && isKakaoInApp()){
+      setStatus("복사했어요 📋 지금 카카오톡 안에서 보고 있어서 공유가 제한돼요. 맨 위 '외부 브라우저로 열기'를 누른 뒤 다시 시도하면 카톡으로 바로 열려요!");
+      return;
+    }
     setStatus(ok ? "복사했어요! 카톡/문자에 붙여넣기 해줘 📋" : "복사에 실패했어요. 메시지를 길게 눌러 직접 복사해줘.");
   }
   function sendToPastorSMS(){
