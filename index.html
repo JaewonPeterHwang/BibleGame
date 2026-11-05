@@ -190,7 +190,7 @@
     '<div style="margin-top:10px;"><span class="verse-num">17</span>복음에는 하나님의 의가 나타나서 믿음으로 믿음에 이르게 하나니 기록된 바 오직 의인은 믿음으로 말미암아 살리라 함과 같으니라</div>' +
     '<div class="muted" style="margin-top:10px;">— 로마서 1:16-17</div>';
 
-  var SERMON_DATE = "261018";
+  var SERMON_DATE = "26년10월18일";
   var PASTOR_IG = "joonpeter153"; // 목사님 인스타그램 아이디 — 바뀌면 여기와 위 HTML의 href도 함께 수정
 
   var QUIZ = [
@@ -401,7 +401,7 @@
   function buildMessage(){
     var name = $("final-name").value.trim() || "이름 없음";
     var note = $("final-note").value.trim();
-    var msg = "[중고등부 말씀 방탈출 완료]\n이름: " + name + "\n본문: 로마서 1:16-17 (" + SERMON_DATE + " 설교)\n";
+    var msg = "[중고등부 말씀 방탈출 완료]\n이름: " + name + "\n본문: 로마서 1:16-17\n" + SERMON_DATE + " 설교\n";
     if (note) msg += "나눔 · 기도제목: " + note;
     return msg.trim();
   }
