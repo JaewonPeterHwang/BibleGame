@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="description" content="로마서 1:16-17, 중고등부 말씀 방탈출 게임">
+<title>나에게 정말 기쁜 소식 | 말씀 방탈출</title>
+<style>
+  :root{
+    --bg1:#140f2e; --bg2:#271a4d; --bg3:#3d2470;
+    --gold:#f6c453; --gold-dark:#d9a62e;
+    --card:rgba(255,255,255,0.07); --card-border:rgba(255,255,255,0.14);
+    --text:#f5f3ff; --muted:#b7aede;
+    --ok:#4ade80; --bad:#f87171; --radius:20px;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;height:100%;}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+    background:
+      radial-gradient(circle at 15% 15%, rgba(246,196,83,0.14), transparent 40%),
+      radial-gradient(circle at 85% 8%, rgba(255,255,255,0.08), transparent 35%),
+      radial-gradient(circle at 70% 85%, rgba(246,196,83,0.08), transparent 40%),
+      linear-gradient(160deg, var(--bg1), var(--bg2) 55%, var(--bg3));
+    color:var(--text); min-height:100vh; overflow-x:hidden;
+  }
+  #app{max-width:480px; margin:0 auto; min-height:100vh; display:flex; flex-direction:column;
+    padding: calc(12px + env(safe-area-inset-top,0px)) 16px calc(16px + env(safe-area-inset-bottom,0px));}
+
+  header{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:12px;}
+  .brand{font-size:12.5px; font-weight:800; color:var(--gold); letter-spacing:.2px; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .tools{display:flex; gap:7px; flex-shrink:0;}
+  .tool-btn{min-width:40px; min-height:38px; border-radius:10px; border:1px solid var(--card-border); background:var(--card); color:var(--text); font-size:12.5px; padding:0 10px; display:flex; align-items:center; justify-content:center; gap:4px;}
+
+  .meta-row{display:flex; justify-content:space-between; align-items:center; font-size:12.5px; color:var(--muted); margin-bottom:6px;}
+  #progress-wrap{height:9px; background:rgba(255,255,255,0.1); border-radius:20px; overflow:hidden; border:1px solid rgba(255,255,255,0.12); margin-bottom:16px;}
+  #progress-bar{height:100%; width:0%; background:linear-gradient(90deg,var(--gold-dark),var(--gold)); border-radius:20px; transition:width .5s ease;}
+
+  .screen{display:none; flex:1; flex-direction:column; animation:fadeIn .4s ease;}
+  .screen.active{display:flex;}
+  @keyframes fadeIn{from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:translateY(0);}}
+  @media (prefers-reduced-motion: reduce){ *,*::before,*::after{animation:none!important; transition:none!important;} }
+
+  .card{background:var(--card); border:1px solid var(--card-border); border-radius:var(--radius); padding:20px; margin-bottom:14px; backdrop-filter:blur(6px);}
+  h1{font-size:clamp(21px,6vw,27px); margin:.2em 0; line-height:1.35;}
+  h2{font-size:clamp(17.5px,5vw,20.5px); margin:.2em 0 10px; line-height:1.4;}
+  p{line-height:1.65; color:var(--text); font-size:15px; margin:0 0 10px;}
+  .muted{color:var(--muted); font-size:13.5px;}
+  .center{text-align:center;}
+  .badge{display:inline-block; background:rgba(246,196,83,0.15); color:var(--gold); border:1px solid rgba(246,196,83,0.4); border-radius:20px; padding:4px 12px; font-size:12.5px; margin-bottom:10px;}
+
+  .btn{display:block; width:100%; padding:15px; border-radius:14px; border:none; background:linear-gradient(135deg,var(--gold),var(--gold-dark)); color:#2a1b00; font-weight:700; font-size:16px; cursor:pointer; margin-top:10px; box-shadow:0 6px 16px rgba(246,196,83,0.25);}
+  .btn:active{transform:scale(.98);}
+  .btn.secondary{background:transparent; border:1px solid var(--card-border); color:var(--text); box-shadow:none;}
+  .btn.outline{background:rgba(255,255,255,0.05); border:1px solid var(--card-border); color:var(--text); box-shadow:none; font-weight:700;}
+
+  /* scene art */
+  .scene-art{position:relative; height:clamp(120px,27vw,170px); border:1px solid var(--card-border); border-radius:18px; margin-bottom:14px; overflow:hidden; display:flex; align-items:center; justify-content:center;}
+  .scene-art .emoji{font-size:clamp(44px,13vw,62px); filter:drop-shadow(0 8px 10px rgba(0,0,0,.35)); animation:float 3.2s ease-in-out infinite;}
+  .scene-art .tag{position:absolute; top:10px; left:12px; font-size:11px; background:rgba(0,0,0,.35); border:1px solid rgba(255,255,255,.3); padding:3px 10px; border-radius:20px; font-weight:700;}
+  @keyframes float{0%,100%{transform:translateY(0);} 50%{transform:translateY(-6px);}}
+  .theme-0{background:linear-gradient(160deg,#4b2f73,#241440);}
+  .theme-1{background:linear-gradient(160deg,#5b3a86,#2c1854);}
+  .theme-2{background:linear-gradient(160deg,#1f4f7a,#122840);}
+  .theme-3{background:linear-gradient(160deg,#8a6a1f,#3d2d0d);}
+  .theme-4{background:linear-gradient(160deg,#4a5568,#1f2733);}
+
+  .room-tag{font-size:13px; color:var(--gold); font-weight:700; margin-bottom:6px;}
+  .story{font-style:italic; color:var(--muted); font-size:14px; margin-bottom:14px; line-height:1.6;}
+
+  .option{display:block; width:100%; text-align:left; padding:14px 16px; margin-bottom:10px; border-radius:14px; border:1px solid var(--card-border); background:rgba(255,255,255,0.04); color:var(--text); font-size:14.5px; line-height:1.55; cursor:pointer;}
+  .option:active{transform:scale(.985);}
+  .option.correct{border-color:var(--ok); background:rgba(74,222,128,0.15);}
+  .option.wrong{border-color:var(--bad); background:rgba(248,113,113,0.15); animation:shake .35s;}
+  .option[disabled]{opacity:.55;}
+  @keyframes shake{0%,100%{transform:translateX(0);}25%{transform:translateX(-5px);}75%{transform:translateX(5px);}}
+
+  .feedback{border-radius:14px; padding:14px 16px; margin-top:4px; font-size:14px; line-height:1.65; display:none;}
+  .feedback.show{display:block;}
+  .feedback.ok{background:rgba(74,222,128,0.12); border:1px solid rgba(74,222,128,0.4);}
+  .feedback.hint{background:rgba(248,113,113,0.12); border:1px solid rgba(248,113,113,0.4);}
+  .feedback b{color:var(--gold);}
+
+  .keys{display:flex; gap:8px; margin:4px 0 0; flex-wrap:wrap; justify-content:center;}
+  .key{width:38px;height:38px; border-radius:10px; display:flex;align-items:center;justify-content:center; font-size:17px; border:1px solid var(--card-border); background:rgba(255,255,255,0.03); transition:all .3s;}
+  .key.got{background:rgba(246,196,83,0.2); border-color:var(--gold); transform:scale(1.08);}
+
+  textarea, input[type=text]{width:100%; padding:12px 14px; border-radius:12px; border:1px solid var(--card-border); background:rgba(255,255,255,0.06); color:var(--text); font-size:14.5px; font-family:inherit; margin-bottom:10px;}
+  textarea::placeholder, input::placeholder{color:var(--muted);}
+  textarea{resize:none; min-height:72px;}
+  label{display:block; font-size:13px; color:var(--muted); margin-bottom:6px; font-weight:700;}
+
+  .verse-box{border-left:3px solid var(--gold); padding:14px 16px; margin:4px 0 0; background:rgba(246,196,83,0.07); border-radius:0 12px 12px 0; font-size:14.5px; line-height:1.85; color:var(--text);}
+  .verse-num{color:var(--gold); font-weight:800; margin-right:4px;}
+
+  .action-row{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:4px;}
+  .status-line{text-align:center; font-size:13px; color:var(--aqua,#8ae7d9); min-height:18px; margin-top:10px;}
+
+  footer.note{text-align:center; font-size:12px; color:var(--muted); margin-top:auto; padding-top:16px;}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <header>
+    <div class="brand">✦ 수인중앙교회 · 말씀 방탈출</div>
+    <div class="tools">
+      <button class="tool-btn" id="sound-btn" type="button" aria-pressed="false">🔇</button>
+      <button class="tool-btn" id="restart-btn" type="button">↻ 처음</button>
+    </div>
+  </header>
+
+  <div class="meta-row"><span id="progress-label">모험 준비</span><span id="progress-count">0 / 4</span></div>
+  <div id="progress-wrap" role="progressbar" aria-valuemin="0" aria-valuemax="4" aria-valuenow="0"><div id="progress-bar"></div></div>
+
+  <!-- INTRO -->
+  <section class="screen active" id="screen-intro">
+    <div class="scene-art theme-0"><span class="tag">MISSION START</span><span class="emoji">✉️</span></div>
+    <div class="card">
+      <div class="badge">성경 방탈출 · 중고등부</div>
+      <h1>나에게 정말 기쁜 소식</h1>
+      <p class="muted">이번 주 함께하지 못한 너를 위해 준비했어. 말씀을 따라 4개의 방을 탈출해보자!</p>
+    </div>
+    <div class="card">
+      <p>📖 <b>본문</b> · 로마서 1:16-17</p>
+      <p>🗝️ <b>미션</b> · 4개의 방에 숨겨진 질문에 답하고 "은혜의 문"까지 탈출하기</p>
+      <p class="muted" style="margin-bottom:14px;">틀려도 괜찮아. 힌트를 보고 몇 번이든 다시 도전할 수 있어!</p>
+      <label for="player-name">너의 이름 <span style="color:var(--bad);">*필수</span></label>
+      <input type="text" id="player-name" required placeholder="이름을 입력해줘 (선생님께 전할 때 쓰여)">
+      <div class="muted" id="name-error" style="display:none;color:var(--bad);margin:-4px 0 10px;">⚠️ 이름을 먼저 입력해줘!</div>
+    </div>
+    <button class="btn" id="btn-start">탈출 시작하기 →</button>
+  </section>
+
+  <!-- PUZZLE (reused for 4 rooms) -->
+  <section class="screen" id="screen-puzzle">
+    <div class="scene-art" id="room-art"><span class="tag" id="room-stage"></span><span class="emoji" id="room-emoji"></span></div>
+    <div class="card">
+      <div class="room-tag" id="room-tag"></div>
+      <div class="story" id="room-story"></div>
+      <h2 id="room-q"></h2>
+      <div id="room-options"></div>
+      <div class="feedback" id="room-feedback" aria-live="polite"></div>
+      <button class="btn" id="btn-next" style="display:none;">다음 방으로 →</button>
+    </div>
+    <div class="keys" id="keys-row"></div>
+  </section>
+
+  <!-- FINAL -->
+  <section class="screen" id="screen-final">
+    <div class="scene-art theme-0"><span class="tag">MISSION COMPLETE</span><span class="emoji">🎉</span></div>
+    <div class="card center">
+      <div class="badge">탈출 성공 · 4 / 4</div>
+      <h1>은혜의 문이 열렸다!</h1>
+    </div>
+    <div class="card">
+      <div class="verse-box">
+        <div><span class="verse-num">16</span>내가 복음을 부끄러워하지 아니하노니 이 복음은 모든 믿는 자에게 구원을 주시는 하나님의 능력이 됨이라 먼저는 유대인에게요 그리고 헬라인에게로다</div>
+        <div style="margin-top:10px;"><span class="verse-num">17</span>복음에는 하나님의 의가 나타나서 믿음으로 믿음에 이르게 하나니 기록된 바 오직 의인은 믿음으로 말미암아 살리라 함과 같으니라</div>
+        <div class="muted" style="margin-top:10px;">— 로마서 1:16-17</div>
+      </div>
+    </div>
+    <div class="card">
+      <h2>💌 선생님 · 목사님께 전하기</h2>
+      <p class="muted" style="margin-bottom:12px;">아래에 적고 바로 보내보자. 심방이나 안부 연락을 받을 수 있어!</p>
+      <label for="final-name">이름</label>
+      <input type="text" id="final-name" placeholder="이름을 입력해줘">
+      <label for="final-note">오늘 말씀 중 나누고 싶은 것 · 기도제목</label>
+      <textarea id="final-note" placeholder="예: 시험 망쳐도 하나님이 날 사랑하신다는 거 기억하고 싶어요"></textarea>
+      <div class="action-row">
+        <button class="btn" id="btn-share" style="margin-top:0;">📤 선생님께 보내기</button>
+        <a href="https://ig.me/m/joonpeter153" target="_blank" rel="noopener" class="btn outline" id="btn-ig" style="margin-top:0; text-decoration:none; text-align:center;">💬 목사님께 하고싶은말</a>
+      </div>
+      <div class="status-line" id="status-line"></div>
+    </div>
+    <footer class="note">수인중앙교회 중고등부 · 261018 설교 기반 말씀 게임</footer>
+  </section>
+
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  // ============================================================
+  // 매주 바꿔야 할 내용은 이 블록 안에서만 수정하면 됩니다.
+  // ============================================================
+  var VERSE_HTML =
+    '<div><span class="verse-num">16</span>내가 복음을 부끄러워하지 아니하노니 이 복음은 모든 믿는 자에게 구원을 주시는 하나님의 능력이 됨이라 먼저는 유대인에게요 그리고 헬라인에게로다</div>' +
+    '<div style="margin-top:10px;"><span class="verse-num">17</span>복음에는 하나님의 의가 나타나서 믿음으로 믿음에 이르게 하나니 기록된 바 오직 의인은 믿음으로 말미암아 살리라 함과 같으니라</div>' +
+    '<div class="muted" style="margin-top:10px;">— 로마서 1:16-17</div>';
+
+  var SERMON_DATE = "261018";
+  var PASTOR_IG = "joonpeter153"; // 목사님 인스타그램 아이디 — 바뀌면 여기와 위 HTML의 href도 함께 수정
+
+  var QUIZ = [
+    {
+      room: "1번방 · 로마의 거리",
+      theme: 1, emoji: "🏛️",
+      story: "문이 철컥 잠겼다. 벽에 걸린 낡은 지도에는 “로마”라고 적혀 있다...",
+      q: "바울이 편지를 보낸 로마는 어떤 도시였으며, 당시 사람들은 예수님의 십자가 소식을 어떻게 여겼을까?",
+      options: [
+        {t:"가난한 사람들의 도시였고, 십자가 소식을 환영했다", ok:false},
+        {t:"세상에서 가장 화려하고 잘난 사람들의 도시였고, 십자가에서 죽는 것을 약하고 부끄러운 일로 여겼다", ok:true},
+        {t:"종교에 관심 없는 도시였고, 복음에 아무 반응이 없었다", ok:false},
+        {t:"작은 시골 마을이었고, 예수님을 왕으로 섬기던 곳이었다", ok:false}
+      ],
+      hint: "설교 중 “세계에서 가장 화려한 도시”라는 표현을 떠올려봐!",
+      explain: "로마는 돈 많고 똑똑하고 성공한 사람들이 모인 화려한 도시였어. 그런 로마 사람들 눈에 십자가에 달려 죽는 것은 약하고 부끄러운 일이었지. 그런데 바울은 바로 그 자리에서 복음을 전했어. (롬 1:16)"
+    },
+    {
+      room: "2번방 · 담대함의 방",
+      theme: 2, emoji: "⚡",
+      story: "다음 방 문에는 커다랗게 “왜?” 라는 글자만 적혀 있다...",
+      q: "사도 바울은 왜 복음을 부끄러워하지 않는다고 말했을까?",
+      options: [
+        {t:"복음을 전하면 돈을 많이 벌 수 있어서", ok:false},
+        {t:"복음이 모든 믿는 자에게 구원을 주시는 하나님의 능력이기 때문에", ok:true},
+        {t:"로마 사람들이 이미 복음을 다 알고 있어서", ok:false},
+        {t:"바울은 원래 겁이 없는 성격이어서", ok:false}
+      ],
+      hint: "롬 1:16을 떠올려봐. “이 복음은 모든 믿는 자에게 ___을 주시는 하나님의 ___이 됨이라”",
+      explain: "“이 복음은 모든 믿는 자에게 구원을 주시는 하나님의 능력이 됨이라”(롬 1:16). 복음은 사람 눈엔 약해 보여도, 실제로는 사람을 구원하는 하나님의 능력이야."
+    },
+    {
+      room: "3번방 · 복음의 서재",
+      theme: 3, emoji: "📖",
+      story: "방 한가운데 낡은 책 한 권. 표지에 “福音”이라고 쓰여 있다...",
+      q: "‘복음(福音)’이라는 단어의 뜻은 무엇이며, 그것이 우리에게 진짜 기쁜 소식인 이유는?",
+      options: [
+        {t:"‘복잡한 소리’라는 뜻이며, 어려운 교리를 배워야 해서 기쁜 소식이다", ok:false},
+        {t:"‘복 받는 방법’이라는 뜻이며, 헌금을 많이 하면 복을 받아서 기쁜 소식이다", ok:false},
+        {t:"‘복된 소식’이라는 뜻이며, 내가 증명하기 전에 하나님께서 먼저 나를 자녀로 인정하고 사랑하셨기에 기쁜 소식이다", ok:true},
+        {t:"성공한 사람만 들을 수 있는 특별한 소식이다", ok:false}
+      ],
+      hint: "설교에서 “내가 나를 증명하기 전에, 하나님께서 먼저 ___” 라고 했어.",
+      explain: "복음은 ‘복 복’ + ‘소리 음’, 즉 ‘복된 소식’이야. 그게 진짜 기쁜 소식인 이유는, 내가 뭔가를 이루기 전에 하나님께서 먼저 나를 당신의 자녀로 인정하고 사랑해주셨기 때문이야."
+    },
+    {
+      room: "4번방 · 거울의 방",
+      theme: 4, emoji: "🪞",
+      story: "마지막 문 앞, 거울 하나가 놓여 있다. 거울 속엔 지친 네 얼굴이 비친다...",
+      q: "시험 성적이 떨어지거나 친구와 비교당해서 속상할 때, 오늘 말씀에 따르면 우리가 기억해야 할 것은?",
+      options: [
+        {t:"더 열심히 노력해서 내 가치를 스스로 증명해야 한다", ok:false},
+        {t:"하나님은 내가 잘하든 못하든 지켜보다 벌주시는 분이 아니라, 내가 아무것도 증명하기 전에 이미 나를 사랑하고 받아주신 분이라는 것", ok:true},
+        {t:"비교당하는 건 당연하니 신경 쓰지 않는 척해야 한다", ok:false},
+        {t:"실패했으니 하나님께 혼날까봐 숨어야 한다", ok:false}
+      ],
+      hint: "설교자님도 입시와 목사고시에서 여러 번 실패했지만, 하나님은 그를 어떻게 대하셨지?",
+      explain: "하나님은 내가 잘하나 못하나 지켜보다가 벌주시는 분이 아니라, 내가 아무것도 증명하기 전에 먼저 나를 받아주신 분이야. 실패해도 넘어지지 않고, 다시 주님을 보고 일어날 수 있어."
+    }
+  ];
+  // ============================================================
+  // 여기까지가 매주 교체하는 블록입니다.
+  // ============================================================
+
+  var state = { step:-1, solved:0, muted:true, playerName:"" };
+  var audioCtx = null;
+
+  function $(id){ return document.getElementById(id); }
+
+  function showScreen(id){
+    document.querySelectorAll(".screen").forEach(function(s){ s.classList.remove("active"); });
+    $(id).classList.add("active");
+  }
+
+  function setProgress(){
+    $("progress-label").textContent = state.step === -1 ? "모험 준비" : state.step === 4 ? "모험 완료!" : ("말씀의 문 " + (state.step+1) + " / 4");
+    $("progress-count").textContent = state.solved + " / 4";
+    $("progress-bar").style.width = Math.round((state.solved/4)*100) + "%";
+    $("progress-wrap").setAttribute("aria-valuenow", String(state.solved));
+  }
+
+  // ---------- sound ----------
+  function ensureAudio(){
+    if (!audioCtx){
+      try{ audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+      catch(e){ audioCtx = null; }
+    }
+    if (audioCtx && audioCtx.state === "suspended"){ audioCtx.resume(); }
+  }
+  function playTone(freq, start, dur, type){
+    if (state.muted || !audioCtx) return;
+    try{
+      var osc = audioCtx.createOscillator(); var gain = audioCtx.createGain();
+      osc.type = type || "sine"; osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0.0001, audioCtx.currentTime + start);
+      gain.gain.exponentialRampToValueAtTime(0.18, audioCtx.currentTime + start + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + start + dur);
+      osc.connect(gain).connect(audioCtx.destination);
+      osc.start(audioCtx.currentTime + start);
+      osc.stop(audioCtx.currentTime + start + dur + 0.02);
+    }catch(e){}
+  }
+  function successSound(){ playTone(523,0,.12,"sine"); playTone(659,.12,.12,"sine"); playTone(784,.24,.22,"sine"); }
+  function failSound(){ playTone(160,0,.18,"sawtooth"); }
+
+  function updateSoundBtn(){
+    $("sound-btn").textContent = state.muted ? "🔇" : "🔊";
+    $("sound-btn").setAttribute("aria-pressed", String(!state.muted));
+  }
+  function loadMuted(){
+    try{ state.muted = localStorage.getItem("bible_escape_muted") !== "0"; }catch(e){ state.muted = true; }
+    updateSoundBtn();
+  }
+  function toggleMuted(){
+    ensureAudio();
+    state.muted = !state.muted;
+    updateSoundBtn();
+    try{ localStorage.setItem("bible_escape_muted", state.muted ? "1" : "0"); }catch(e){}
+    if (!state.muted) successSound();
+  }
+
+  // ---------- keys ----------
+  function renderKeys(){
+    var row = $("keys-row"); row.innerHTML = "";
+    for (var i=0;i<QUIZ.length;i++){
+      var k = document.createElement("div");
+      k.className = "key" + (i < state.solved ? " got" : "");
+      k.textContent = i < state.solved ? "🗝️" : "🔒";
+      row.appendChild(k);
+    }
+  }
+
+  // ---------- puzzle ----------
+  function renderRoom(idx){
+    var room = QUIZ[idx];
+    $("room-art").className = "scene-art theme-" + room.theme;
+    $("room-stage").textContent = "STAGE " + (idx+1) + " / 4";
+    $("room-emoji").textContent = room.emoji;
+    $("room-tag").textContent = room.room;
+    $("room-story").textContent = room.story;
+    $("room-q").textContent = room.q;
+    $("btn-next").style.display = "none";
+
+    var fb = $("room-feedback"); fb.className = "feedback"; fb.innerHTML = "";
+
+    var wrap = $("room-options"); wrap.innerHTML = "";
+    room.options.forEach(function(opt){
+      var b = document.createElement("button");
+      b.type = "button"; b.className = "option"; b.textContent = opt.t;
+      b.addEventListener("click", function(){ handleAnswer(b, opt, room); });
+      wrap.appendChild(b);
+    });
+
+    renderKeys();
+    setProgress();
+    showScreen("screen-puzzle");
+  }
+
+  function handleAnswer(btn, opt, room){
+    var fb = $("room-feedback");
+    if (opt.ok){
+      successSound();
+      btn.classList.add("correct");
+      document.querySelectorAll("#room-options .option").forEach(function(o){ o.disabled = true; });
+      fb.className = "feedback ok show";
+      fb.innerHTML = "<b>정답! 🗝️ 열쇠를 얻었어</b><br>" + room.explain;
+      $("btn-next").style.display = "block";
+      state.solved++;
+      setProgress();
+      renderKeys();
+    } else {
+      failSound();
+      btn.classList.add("wrong");
+      setTimeout(function(){ btn.classList.remove("wrong"); }, 500);
+      fb.className = "feedback hint show";
+      fb.innerHTML = "<b>다시 생각해볼까? 💡</b><br>" + room.hint;
+    }
+  }
+
+  function nextRoom(){
+    state.step++;
+    if (state.step < QUIZ.length){ renderRoom(state.step); }
+    else { goFinal(); }
+  }
+
+  function goFinal(){
+    state.step = 4; state.solved = 4; setProgress();
+    if ($("final-name").value.trim() === "" && state.playerName){
+      $("final-name").value = state.playerName;
+    }
+    $("status-line").textContent = "";
+    showScreen("screen-final");
+  }
+
+  function resetGame(ask){
+    if (ask && state.step >= 0 && state.step < 4){
+      if (!window.confirm("처음부터 다시 시작할까? 지금까지 연 방은 초기화돼.")) return;
+    }
+    state.step = -1; state.solved = 0;
+    $("player-name").value = ""; $("final-name").value = ""; $("final-note").value = "";
+    $("status-line").textContent = "";
+    $("name-error").style.display = "none";
+    setProgress();
+    showScreen("screen-intro");
+  }
+
+  // ---------- teacher contact ----------
+  function buildMessage(){
+    var name = $("final-name").value.trim() || "이름 없음";
+    var note = $("final-note").value.trim();
+    var msg = "[중고등부 말씀 방탈출 완료]\n이름: " + name + "\n본문: 로마서 1:16-17 (" + SERMON_DATE + " 설교)\n";
+    if (note) msg += "나눔 · 기도제목: " + note;
+    return msg.trim();
+  }
+  async function copyText(text){
+    try{
+      if (navigator.clipboard && window.isSecureContext){ await navigator.clipboard.writeText(text); return true; }
+    }catch(e){}
+    try{
+      var ta = document.createElement("textarea");
+      ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+      document.body.appendChild(ta); ta.select();
+      var ok = document.execCommand("copy"); ta.remove();
+      return ok;
+    }catch(e){ return false; }
+  }
+  function setStatus(msg){ $("status-line").textContent = msg; }
+
+  async function shareMessage(){
+    var text = buildMessage();
+    if (navigator.share){
+      try{
+        await navigator.share({ title:"말씀 방탈출 완료", text:text });
+        setStatus("공유 창이 열렸어요. 받을 분을 선택해서 보내줘!");
+        return;
+      }catch(e){
+        if (e && e.name === "AbortError"){ setStatus("공유를 취소했어요."); return; }
+      }
+    }
+    var ok = await copyText(text);
+    setStatus(ok ? "복사했어요! 카톡/문자에 붙여넣기 해줘 📋" : "복사에 실패했어요. 메시지를 길게 눌러 직접 복사해줘.");
+  }
+  function sendToPastorIG(){
+    var text = buildMessage();
+    copyText(text).then(function(copied){
+      setStatus(copied
+        ? "메시지를 복사했어요! 열린 인스타 DM 창에 붙여넣기 해줘 📋"
+        : "인스타 DM 창을 열었어요. 내용을 직접 적어서 보내줘!");
+    });
+    // 링크 이동(target=_blank)은 <a> 태그 기본 동작으로 처리되고, 여기서는 복사만 수행합니다.
+  }
+
+  // ---------- init ----------
+  function init(){
+    loadMuted(); setProgress();
+
+    $("sound-btn").addEventListener("click", toggleMuted);
+    $("restart-btn").addEventListener("click", function(){ resetGame(true); });
+
+    $("btn-start").addEventListener("click", function(){
+      var nameVal = $("player-name").value.trim();
+      if (!nameVal){
+        $("name-error").style.display = "block";
+        $("player-name").focus();
+        return;
+      }
+      $("name-error").style.display = "none";
+      ensureAudio();
+      state.playerName = nameVal;
+      state.step = 0;
+      renderRoom(0);
+    });
+
+    $("btn-next").addEventListener("click", nextRoom);
+    $("btn-share").addEventListener("click", shareMessage);
+    $("btn-ig").addEventListener("click", sendToPastorIG);
+  }
+
+  document.addEventListener("DOMContentLoaded", init);
+})();
+</script>
+</body>
+</html>
