@@ -161,7 +161,7 @@
       </div>
     </div>
     <div class="card">
-      <h2>💌 선생님 · 목사님께 전하기</h2>
+      <h2>💌 선생님께 전하기</h2>
       <p class="muted" style="margin-bottom:12px;">아래에 적고 바로 보내보자. 심방이나 안부 연락을 받을 수 있어!</p>
       <label for="final-name">이름</label>
       <input type="text" id="final-name" placeholder="이름을 입력해줘">
@@ -169,9 +169,17 @@
       <textarea id="final-note" placeholder="예: 시험 망쳐도 하나님이 날 사랑하신다는 거 기억하고 싶어요"></textarea>
       <div class="action-row">
         <button class="btn" id="btn-share" style="margin-top:0;">📤 선생님께 보내기</button>
-        <a href="https://ig.me/m/joonpeter153" target="_blank" rel="noopener" class="btn outline" id="btn-ig" style="margin-top:0; text-decoration:none; text-align:center;">💬 목사님께 하고싶은말</a>
       </div>
       <div class="status-line" id="status-line"></div>
+    </div>
+    <div class="card">
+      <h2>🙏 목사님께 하고 싶은 말 <span class="muted" style="font-weight:400;font-size:12px;">(선택)</span></h2>
+      <p class="muted" style="margin-bottom:12px;">개인적으로 전하고 싶은 말이 있으면 적어줘. 목사님 문자로 바로 보내드릴게!</p>
+      <textarea id="pastor-note" placeholder="예: 목사님, 오늘 설교 듣고 이런 생각이 들었어요..."></textarea>
+      <div class="action-row">
+        <button class="btn outline" id="btn-pastor-sms" style="margin-top:0;">📩 목사님께 문자 보내기</button>
+      </div>
+      <div class="status-line" id="pastor-status"></div>
     </div>
     <footer class="note">수인중앙교회 중고등부 · 261018 설교 기반 말씀 게임</footer>
   </section>
@@ -191,7 +199,7 @@
     '<div class="muted" style="margin-top:10px;">— 로마서 1:16-17</div>';
 
   var SERMON_DATE = "26년10월18일";
-  var PASTOR_IG = "joonpeter153"; // 목사님 인스타그램 아이디 — 바뀌면 여기와 위 HTML의 href도 함께 수정
+  var PASTOR_PHONE = "01032113871"; // 목사님 휴대폰 번호(문자용, 하이픈 없이) — 바뀌면 여기만 수정하면 됩니다
 
   var QUIZ = [
     {
@@ -433,14 +441,29 @@
     var ok = await copyText(text);
     setStatus(ok ? "복사했어요! 카톡/문자에 붙여넣기 해줘 📋" : "복사에 실패했어요. 메시지를 길게 눌러 직접 복사해줘.");
   }
-  function sendToPastorIG(){
-    var text = buildMessage();
-    copyText(text).then(function(copied){
-      setStatus(copied
-        ? "메시지를 복사했어요! 열린 인스타 DM 창에 붙여넣기 해줘 📋"
-        : "인스타 DM 창을 열었어요. 내용을 직접 적어서 보내줘!");
-    });
-    // 링크 이동(target=_blank)은 <a> 태그 기본 동작으로 처리되고, 여기서는 복사만 수행합니다.
+  function sendToPastorSMS(){
+    var note = $("pastor-note").value.trim();
+    if (!note){
+      $("pastor-status").textContent = "목사님께 전하고 싶은 말을 적어주면 보내드릴게!";
+      $("pastor-note").focus();
+      return;
+    }
+    var name = ($("final-name").value || state.playerName || "").trim() || "이름 없음";
+    var body = "[중고등부 말씀 방탈출] " + name + " 학생이 목사님께 드리는 말씀\n본문: 로마서 1:16-17 (" + SERMON_DATE + " 설교)\n" + note;
+    var ua = (navigator.userAgent || "");
+    var isIOS = /iPad|iPhone|iPod/.test(ua);
+    var sep = isIOS ? "&" : "?";
+    var url = "sms:" + PASTOR_PHONE + sep + "body=" + encodeURIComponent(body);
+    try{
+      window.location.href = url;
+      $("pastor-status").textContent = "문자 앱이 열렸어요. 내용 확인하고 전송 버튼만 눌러줘!";
+    }catch(e){
+      copyText(body).then(function(copied){
+        $("pastor-status").textContent = copied
+          ? "문자 앱을 열지 못했어요. 대신 복사했으니 문자 앱에 붙여넣어줘 📋"
+          : "문자 앱을 열지 못했어요. 메시지를 길게 눌러 직접 복사해줘.";
+      });
+    }
   }
 
   // ---------- in-app browser banner ----------
@@ -487,7 +510,7 @@
 
     $("btn-next").addEventListener("click", nextRoom);
     $("btn-share").addEventListener("click", shareMessage);
-    $("btn-ig").addEventListener("click", sendToPastorIG);
+    $("btn-pastor-sms").addEventListener("click", sendToPastorSMS);
   }
 
   document.addEventListener("DOMContentLoaded", init);
