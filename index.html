@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<meta name="description" content="로마서 1:16-17, 중고등부 말씀 방탈출 게임">
-<title>나에게 정말 기쁜 소식 | 말씀 방탈출</title>
+<meta name="description" content="사도행전 6:1-7, 중고등부 선택형 스토리 게임">
+<title>성령과 지혜가 충만한 리더 | 말씀 이야기</title>
 <style>
   :root{
     --bg1:#140f2e; --bg2:#271a4d; --bg3:#3d2470;
@@ -51,6 +51,7 @@
 
   .btn{display:block; width:100%; padding:15px; border-radius:14px; border:none; background:linear-gradient(135deg,var(--gold),var(--gold-dark)); color:#2a1b00; font-weight:700; font-size:16px; cursor:pointer; margin-top:10px; box-shadow:0 6px 16px rgba(246,196,83,0.25);}
   .btn:active{transform:scale(.98);}
+  .btn[disabled]{opacity:.6;}
   .btn.secondary{background:transparent; border:1px solid var(--card-border); color:var(--text); box-shadow:none;}
   .btn.outline{background:rgba(255,255,255,0.05); border:1px solid var(--card-border); color:var(--text); box-shadow:none; font-weight:700;}
 
@@ -66,7 +67,7 @@
   .theme-4{background:linear-gradient(160deg,#4a5568,#1f2733);}
 
   .room-tag{font-size:13px; color:var(--gold); font-weight:700; margin-bottom:6px;}
-  .story{font-style:italic; color:var(--muted); font-size:14px; margin-bottom:14px; line-height:1.6;}
+  .story{font-style:italic; color:var(--muted); font-size:14px; margin-bottom:14px; line-height:1.7;}
 
   .option{display:block; width:100%; text-align:left; padding:14px 16px; margin-bottom:10px; border-radius:14px; border:1px solid var(--card-border); background:rgba(255,255,255,0.04); color:var(--text); font-size:14.5px; line-height:1.55; cursor:pointer;}
   .option:active{transform:scale(.985);}
@@ -103,37 +104,18 @@
 <div id="app">
 
   <header>
-    <div class="brand">✦ 수인중앙교회 · 말씀 방탈출</div>
+    <div class="brand">✦ 수인중앙교회 · 말씀 이야기</div>
     <div class="tools">
       <button class="tool-btn" id="sound-btn" type="button" aria-pressed="false">🔇</button>
       <button class="tool-btn" id="restart-btn" type="button">↻ 처음</button>
     </div>
   </header>
 
-  <div class="meta-row"><span id="progress-label">모험 준비</span><span id="progress-count">0 / 4</span></div>
+  <div class="meta-row"><span id="progress-label">장면 1 / 4</span><span id="progress-count">0 / 4</span></div>
   <div id="progress-wrap" role="progressbar" aria-valuemin="0" aria-valuemax="4" aria-valuenow="0"><div id="progress-bar"></div></div>
 
-  <!-- INTRO -->
-  <section class="screen active" id="screen-intro">
-    <div class="scene-art theme-0"><span class="tag">MISSION START</span><span class="emoji">✉️</span></div>
-    <div class="card">
-      <div class="badge">성경 방탈출 · 중고등부</div>
-      <h1>나에게 정말 기쁜 소식</h1>
-      <p class="muted">이번 주 함께하지 못한 너를 위해 준비했어. 말씀을 따라 4개의 방을 탈출해보자!</p>
-    </div>
-    <div class="card">
-      <p>📖 <b>본문</b> · 로마서 1:16-17</p>
-      <p>🗝️ <b>미션</b> · 4개의 방에 숨겨진 질문에 답하고 "은혜의 문"까지 탈출하기</p>
-      <p class="muted" style="margin-bottom:14px;">틀려도 괜찮아. 힌트를 보고 몇 번이든 다시 도전할 수 있어!</p>
-      <label for="player-name">너의 이름 <span style="color:var(--bad);">*필수</span></label>
-      <input type="text" id="player-name" required placeholder="이름을 입력해줘 (선생님께 전할 때 쓰여)">
-      <div class="muted" id="name-error" style="display:none;color:var(--bad);margin:-4px 0 10px;">⚠️ 이름을 먼저 입력해줘!</div>
-    </div>
-    <button class="btn" id="btn-start">탈출 시작하기 →</button>
-  </section>
-
-  <!-- PUZZLE (reused for 4 rooms) -->
-  <section class="screen" id="screen-puzzle">
+  <!-- SCENE (reused for 4 scenes) : 링크를 열면 바로 1장이 시작됩니다 -->
+  <section class="screen active" id="screen-puzzle">
     <div class="scene-art" id="room-art"><span class="tag" id="room-stage"></span><span class="emoji" id="room-emoji"></span></div>
     <div class="card">
       <div class="room-tag" id="room-tag"></div>
@@ -141,32 +123,28 @@
       <h2 id="room-q"></h2>
       <div id="room-options"></div>
       <div class="feedback" id="room-feedback" aria-live="polite"></div>
-      <button class="btn" id="btn-next" style="display:none;">다음 방으로 →</button>
+      <button class="btn" id="btn-next" style="display:none;">다음 장면으로 →</button>
     </div>
     <div class="keys" id="keys-row"></div>
   </section>
 
   <!-- FINAL -->
   <section class="screen" id="screen-final">
-    <div class="scene-art theme-0"><span class="tag">MISSION COMPLETE</span><span class="emoji">🎉</span></div>
+    <div class="scene-art theme-0"><span class="tag">STORY COMPLETE</span><span class="emoji">🎉</span></div>
     <div class="card center">
-      <div class="badge">탈출 성공 · 4 / 4</div>
-      <h1>은혜의 문이 열렸다!</h1>
+      <div class="badge">이야기 완성 · 4 / 4</div>
+      <h1>이야기가 완성됐어!</h1>
     </div>
     <div class="card">
-      <div class="verse-box">
-        <div><span class="verse-num">16</span>내가 복음을 부끄러워하지 아니하노니 이 복음은 모든 믿는 자에게 구원을 주시는 하나님의 능력이 됨이라 먼저는 유대인에게요 그리고 헬라인에게로다</div>
-        <div style="margin-top:10px;"><span class="verse-num">17</span>복음에는 하나님의 의가 나타나서 믿음으로 믿음에 이르게 하나니 기록된 바 오직 의인은 믿음으로 말미암아 살리라 함과 같으니라</div>
-        <div class="muted" style="margin-top:10px;">— 로마서 1:16-17</div>
-      </div>
+      <div class="verse-box" id="verse-box"></div>
     </div>
     <div class="card">
       <h2>💌 선생님께 전하기</h2>
       <p class="muted" style="margin-bottom:12px;">아래에 적고 제출하면 바로 전달돼요. 심방이나 안부 연락을 받을 수 있어!</p>
-      <label for="final-name">이름</label>
+      <label for="final-name">이름 <span style="color:var(--bad);">*필수</span></label>
       <input type="text" id="final-name" placeholder="이름을 입력해줘">
       <label for="final-note">오늘 말씀 중 나누고 싶은 것 · 기도제목</label>
-      <textarea id="final-note" placeholder="예: 시험 망쳐도 하나님이 날 사랑하신다는 거 기억하고 싶어요"></textarea>
+      <textarea id="final-note" placeholder="예: 우리 중고등부 임원들을 위해 기도하고 싶어요"></textarea>
       <div class="action-row">
         <button class="btn" id="btn-share" style="margin-top:0;">📤 선생님께 보내기</button>
       </div>
@@ -174,14 +152,14 @@
     </div>
     <div class="card">
       <h2>🙏 목사님께 하고 싶은 말 · 기도제목 <span class="muted" style="font-weight:400;font-size:12px;">(선택)</span></h2>
-      <p class="muted" style="margin-bottom:12px;">개인적으로 하고 싶은 말이나 기도제목이 있으면 적어줘. 제출하면 바로 목사님께 전달돼요!</p>
+      <p class="muted" style="margin-bottom:12px;">개인적으로 하고 싶은 말이나 기도제목이 있으면 적어줘. 제출하면 바로 목사님께 전달돼요! (위의 이름 칸에 이름을 적어줘)</p>
       <textarea id="pastor-note" placeholder="예: 목사님, 오늘 설교 듣고 이런 생각이 들었어요... / 요즘 이런 기도제목이 있어요..."></textarea>
       <div class="action-row">
         <button class="btn outline" id="btn-pastor-send" style="margin-top:0;">📨 목사님께 보내기</button>
       </div>
       <div class="status-line" id="pastor-status"></div>
     </div>
-    <footer class="note">수인중앙교회 중고등부 · 261018 설교 기반 말씀 게임</footer>
+    <footer class="note">수인중앙교회 중고등부 · 261101 설교 기반 선택형 스토리 게임</footer>
   </section>
 
 </div>
@@ -194,11 +172,16 @@
   // 매주 바꿔야 할 내용은 이 블록 안에서만 수정하면 됩니다.
   // ============================================================
   var VERSE_HTML =
-    '<div><span class="verse-num">16</span>내가 복음을 부끄러워하지 아니하노니 이 복음은 모든 믿는 자에게 구원을 주시는 하나님의 능력이 됨이라 먼저는 유대인에게요 그리고 헬라인에게로다</div>' +
-    '<div style="margin-top:10px;"><span class="verse-num">17</span>복음에는 하나님의 의가 나타나서 믿음으로 믿음에 이르게 하나니 기록된 바 오직 의인은 믿음으로 말미암아 살리라 함과 같으니라</div>' +
-    '<div class="muted" style="margin-top:10px;">— 로마서 1:16-17</div>';
+    '<div><span class="verse-num">1</span>그 때에 제자가 더 많아졌는데 헬라파 유대인들이 자기의 과부들이 매일의 구제에 빠지므로 히브리파 사람을 원망하니</div>' +
+    '<div style="margin-top:10px;"><span class="verse-num">2</span>열두 사도가 모든 제자를 불러 이르되 우리가 하나님의 말씀을 제쳐 놓고 접대를 일삼는 것이 마땅하지 아니하니</div>' +
+    '<div style="margin-top:10px;"><span class="verse-num">3</span>형제들아 너희 가운데서 성령과 지혜가 충만하여 칭찬 받는 사람 일곱을 택하라 우리가 이 일을 그들에게 맡기고</div>' +
+    '<div style="margin-top:10px;"><span class="verse-num">4</span>우리는 오로지 기도하는 일과 말씀 사역에 힘쓰리라 하니</div>' +
+    '<div style="margin-top:10px;"><span class="verse-num">5</span>온 무리가 이 말을 기뻐하여 믿음과 성령이 충만한 사람 스데반과 또 빌립과 브로고로와 니가노르와 디몬과 바메나와 유대교에 입교했던 안디옥 사람 니골라를 택하여</div>' +
+    '<div style="margin-top:10px;"><span class="verse-num">6</span>사도들 앞에 세우니 사도들이 기도하고 그들에게 안수하니라</div>' +
+    '<div style="margin-top:10px;"><span class="verse-num">7</span>하나님의 말씀이 점점 왕성하여 예루살렘에 있는 제자의 수가 더 심히 많아지고 허다한 제사장의 무리도 이 도에 복종하니라</div>' +
+    '<div class="muted" style="margin-top:10px;">— 사도행전 6:1-7</div>';
 
-  var SERMON_DATE = "26년10월18일";
+  var SERMON_DATE = "26년11월1일";
 
   // 구글 폼으로 바로 제출 — "중고등부 설교 피드백" 폼 연결 정보
   var FORM_ACTION = "https://docs.google.com/forms/d/e/1FAIpQLSfa4PJcpiJBWsfry2Lo1SUxiwKTtEh_V_AmPQ_6WRwOKeLYGg/formResponse";
@@ -210,69 +193,70 @@
     submitDate: "entry.112201991"  // 제출일자
   };
 
+  // 선택지의 r = 그 선택을 했을 때 이야기 속에서 일어난 일(오답일 때만 표시)
   var QUIZ = [
     {
-      room: "1번방 · 로마의 거리",
-      theme: 1, emoji: "🏛️",
-      story: "문이 철컥 잠겼다. 벽에 걸린 낡은 지도에는 “로마”라고 적혀 있다...",
-      q: "바울이 편지를 보낸 로마는 어떤 도시였으며, 당시 사람들은 예수님의 십자가 소식을 어떻게 여겼을까?",
+      room: "1장 · 예루살렘 교회의 아침",
+      theme: 3, emoji: "🌅",
+      story: "예수님이 승천하신 뒤, 성령님과 함께하는 예루살렘 교회에는 사랑이 넘치고 날마다 사람들이 늘어난다. 너도 그 교회의 성도 중 한 명이다. 그런데 오늘 아침, 매일 나누는 구제에서 빠진 과부들이 있다는 소식이 퍼진다. 광장에서 사람들이 웅성거린다. “우리는 유대인이 아니라서 차별하는 거 아니야?”",
+      q: "너라면 지금 어떻게 하겠어?",
       options: [
-        {t:"가난한 사람들의 도시였고, 십자가 소식을 환영했다", ok:false},
-        {t:"세상에서 가장 화려하고 잘난 사람들의 도시였고, 십자가에서 죽는 것을 약하고 부끄러운 일로 여겼다", ok:true},
-        {t:"종교에 관심 없는 도시였고, 복음에 아무 반응이 없었다", ok:false},
-        {t:"작은 시골 마을이었고, 예수님을 왕으로 섬기던 곳이었다", ok:false}
+        {t:"“교회가 일부러 차별하는 거야!” 하며 불만 있는 사람들과 따로 모여 이야기한다", ok:false, r:"불평하는 목소리가 점점 커지고, 교회 안에 편이 갈라지기 시작한다."},
+        {t:"사람이 갑자기 많아져서 손이 닿지 못한 사람이 생긴 거라고 생각하고, 다투기보다 사도들에게 알려서 함께 풀도록 돕는다", ok:true},
+        {t:"내 가족은 구제를 잘 받고 있으니, 괜히 나서지 않고 어떻게 되는지 지켜보기만 한다", ok:false, r:"문제는 그대로 남고, 빠진 과부들은 하루하루 더 외로워진다."},
+        {t:"이 일은 사도들이 전부 직접 해결해야 한다며, 사도들을 찾아가서 따진다", ok:false, r:"사도들은 더 바빠지고, 말씀을 가르치고 기도할 시간은 점점 줄어든다."}
       ],
-      hint: "설교 중 “세계에서 가장 화려한 도시”라는 표현을 떠올려봐!",
-      explain: "로마는 돈 많고 똑똑하고 성공한 사람들이 모인 화려한 도시였어. 그런 로마 사람들 눈에 십자가에 달려 죽는 것은 약하고 부끄러운 일이었지. 그런데 바울은 바로 그 자리에서 복음을 전했어. (롬 1:16)"
+      hint: "설교에서 “사람이 많아지니까 미처 ___ 못한 사람들이 생겼다”고 했어. 이 문제는 누군가의 나쁜 마음 때문일까, 교회가 커지는 과정에서 생긴 빈틈일까?",
+      explain: "교회가 부흥하자 미처 챙기지 못한 사람이 생겼고, 갈등이 터졌어. 사람이 있는 곳에는 언제나 문제가 있지. 중요한 건 불평하며 갈라서는 게 아니라, 문제를 드러내고 함께 풀어 가는 거야. (행 6:1)"
     },
     {
-      room: "2번방 · 담대함의 방",
-      theme: 2, emoji: "⚡",
-      story: "다음 방 문에는 커다랗게 “왜?” 라는 글자만 적혀 있다...",
-      q: "사도 바울은 왜 복음을 부끄러워하지 않는다고 말했을까?",
+      room: "2장 · 사도들의 회의",
+      theme: 2, emoji: "🤝",
+      story: "사도들이 모든 제자를 불러 모았다. “우리가 하나님의 말씀을 제쳐 놓고 접대를 일삼는 것은 마땅하지 않습니다.” 가난한 사람을 돌보는 일도, 말씀을 가르치고 기도하는 일도 모두 소중하다. 사도들이 해결 방법을 내놓는다.",
+      q: "너라면 어떤 의견에 손을 들겠어?",
       options: [
-        {t:"복음을 전하면 돈을 많이 벌 수 있어서", ok:false},
-        {t:"복음이 모든 믿는 자에게 구원을 주시는 하나님의 능력이기 때문에", ok:true},
-        {t:"로마 사람들이 이미 복음을 다 알고 있어서", ok:false},
-        {t:"바울은 원래 겁이 없는 성격이어서", ok:false}
+        {t:"사도들이 구제를 전부 맡고, 말씀을 전하는 일은 당분간 쉰다", ok:false, r:"구제는 잘 되지만, 말씀을 가르치고 기도해 줄 사람이 사라져 버린다."},
+        {t:"구제는 교회의 중요한 일이 아니니 이제 그만둔다", ok:false, r:"도움이 끊긴 과부들은 훨씬 더 힘든 날을 보내게 된다."},
+        {t:"사도들은 기도와 말씀 전하는 일에 집중하고, 구제와 섬김은 성도들이 뽑은 일꾼들이 맡는다", ok:true},
+        {t:"사도들이 믿을 만한 일곱 명을 직접 골라 임명하고, 성도들은 따르기만 한다", ok:false, r:"일은 빨리 정해지지만, 성도들은 ‘우리가 세운 일꾼’이라는 마음을 갖기 어렵다."}
       ],
-      hint: "롬 1:16을 떠올려봐. “이 복음은 모든 믿는 자에게 ___을 주시는 하나님의 ___이 됨이라”",
-      explain: "“이 복음은 모든 믿는 자에게 구원을 주시는 하나님의 능력이 됨이라”(롬 1:16). 복음은 사람 눈엔 약해 보여도, 실제로는 사람을 구원하는 하나님의 능력이야."
+      hint: "4절을 떠올려 봐. “우리는 오로지 ___하는 일과 말씀 사역에 힘쓰리라.” 그리고 일곱 사람을 누가 택했는지도 기억해 봐!",
+      explain: "사도들은 교회의 모든 일을 혼자 다 돌볼 수 없다는 걸 알았어. 그래서 말씀과 기도에 집중하고, 구제와 섬김은 일꾼(집사)을 세워 맡겼지. 그리고 누구를 세울지는 사도들이 아니라 온 무리, 곧 성도들이 함께 택했어. (행 6:2-5)"
     },
     {
-      room: "3번방 · 복음의 서재",
-      theme: 3, emoji: "📖",
-      story: "방 한가운데 낡은 책 한 권. 표지에 “福音”이라고 쓰여 있다...",
-      q: "‘복음(福音)’이라는 단어의 뜻은 무엇이며, 그것이 우리에게 진짜 기쁜 소식인 이유는?",
+      room: "3장 · 일곱 사람을 뽑는 날",
+      theme: 1, emoji: "🗳️",
+      story: "이제 성도들이 일곱 사람을 뽑을 차례다. 광장에 후보들이 모였다. 말솜씨가 뛰어난 사람, 재산이 많은 사람, 나와 가장 친한 친구, 그리고 조용히 사람들을 섬겨 온 사람이 있다. 이제 너의 한 표를 던질 차례다.",
+      q: "너의 한 표는 누구에게 갈까?",
       options: [
-        {t:"‘복잡한 소리’라는 뜻이며, 어려운 교리를 배워야 해서 기쁜 소식이다", ok:false},
-        {t:"‘복 받는 방법’이라는 뜻이며, 헌금을 많이 하면 복을 받아서 기쁜 소식이다", ok:false},
-        {t:"‘복된 소식’이라는 뜻이며, 내가 증명하기 전에 하나님께서 먼저 나를 자녀로 인정하고 사랑하셨기에 기쁜 소식이다", ok:true},
-        {t:"성공한 사람만 들을 수 있는 특별한 소식이다", ok:false}
+        {t:"말을 제일 잘하고 인기가 많아서, 우리 이야기를 잘 들어줄 것 같은 사람", ok:false, r:"인기는 많지만, 정작 꼭 필요한 섬김은 뒤로 밀리고 만다."},
+        {t:"재산이 많아서 교회에 큰 도움이 될 것 같은 사람", ok:false, r:"도움은 되겠지만, 믿음으로 섬기는 마음까지 있는지는 알 수 없다."},
+        {t:"나와 가장 친해서 나를 편하게 해 줄 것 같은 사람", ok:false, r:"나에게는 편하겠지만, 공동체 전체를 섬길 사람인지는 알 수 없다."},
+        {t:"믿음과 성령이 충만해서, 함께 예수님을 잘 믿도록 섬길 것이라고 칭찬받는 사람", ok:true}
       ],
-      hint: "설교에서 “내가 나를 증명하기 전에, 하나님께서 먼저 ___” 라고 했어.",
-      explain: "복음은 ‘복 복’ + ‘소리 음’, 즉 ‘복된 소식’이야. 그게 진짜 기쁜 소식인 이유는, 내가 뭔가를 이루기 전에 하나님께서 먼저 나를 당신의 자녀로 인정하고 사랑해주셨기 때문이야."
+      hint: "3절의 기준을 떠올려 봐. “성령과 ___가 충만하여 칭찬 받는 사람.” 5절에서는 “믿음과 성령이 충만한 사람”이라고 했어.",
+      explain: "교회 리더의 기준은 인기도, 재산도, 친한 정도도, 나의 이익도 아니야. 믿음과 성령이 충만해서 함께 예수님을 잘 믿도록 섬길 사람이어야 해. 이런 사람들이 세워지자 하나님의 말씀이 점점 왕성해지고 제자의 수가 많아졌어. (행 6:3-7)"
     },
     {
-      room: "4번방 · 거울의 방",
-      theme: 4, emoji: "🪞",
-      story: "마지막 문 앞, 거울 하나가 놓여 있다. 거울 속엔 지친 네 얼굴이 비친다...",
-      q: "시험 성적이 떨어지거나 친구와 비교당해서 속상할 때, 오늘 말씀에 따르면 우리가 기억해야 할 것은?",
+      room: "4장 · 오늘, 우리 학생 총회",
+      theme: 4, emoji: "📋",
+      story: "이야기에서 빠져나와 오늘의 너로 돌아온다. 이번 주일 공과 시간에는 학생 총회가 있다. 한 해 동안 중고등부가 어떻게 운영되어 왔는지 돌아보고, 내년에 중고등부를 섬길 임원을 뽑는 시간이다. 투표용지를 받은 너는 오늘 말씀을 떠올려 본다.",
+      q: "오늘 말씀에 비추어, 투표하는 나와 뽑힌 임원이 가져야 할 태도는?",
       options: [
-        {t:"더 열심히 노력해서 내 가치를 스스로 증명해야 한다", ok:false},
-        {t:"하나님은 내가 잘하든 못하든 지켜보다 벌주시는 분이 아니라, 내가 아무것도 증명하기 전에 이미 나를 사랑하고 받아주신 분이라는 것", ok:true},
-        {t:"비교당하는 건 당연하니 신경 쓰지 않는 척해야 한다", ok:false},
-        {t:"실패했으니 하나님께 혼날까봐 숨어야 한다", ok:false}
+        {t:"나 대신 열심히 일해 줄 사람을 뽑고, 뽑은 뒤에는 임원들이 알아서 잘하겠지 하고 맡겨 둔다. 뽑힌 임원은 맡은 일만 해내면 충분하다", ok:false, r:"임원들만 지치고, 중고등부는 함께 자라지 못한다."},
+        {t:"나와 함께 예수님을 잘 믿도록 섬길 사람을 뽑고, 뽑은 뒤에도 협조하며 기도한다. 뽑힌 임원은 하나님이 세우셨다는 마음으로 하나님을 알기에 힘쓴다", ok:true},
+        {t:"세상 선거처럼 우리 반이나 친한 친구들에게 이익이 될 사람을 뽑고, 뽑힌 임원은 그 기대에 맞추려고 애쓴다", ok:false, r:"공동체가 편으로 나뉘고, 예수님을 따르는 일은 뒷전이 된다."},
+        {t:"투표할 때는 인기 있는 사람을 뽑고, 뽑힌 임원은 높은 자리에 올랐으니 친구들이 잘 따라 주길 기대한다", ok:false, r:"섬김이 아니라 자리가 목적이 되어 버린다."}
       ],
-      hint: "설교자님도 입시와 목사고시에서 여러 번 실패했지만, 하나님은 그를 어떻게 대하셨지?",
-      explain: "하나님은 내가 잘하나 못하나 지켜보다가 벌주시는 분이 아니라, 내가 아무것도 증명하기 전에 먼저 나를 받아주신 분이야. 실패해도 넘어지지 않고, 다시 주님을 보고 일어날 수 있어."
+      hint: "설교에서 “오늘 투표하는 사람들은 나 ___ 일해 줄 사람을 뽑는 게 아니라, 나와 ___ 예수님을 잘 믿도록 섬길 수 있는 사람을 뽑는 시간”이라고 했어.",
+      explain: "투표는 누가 나를 편하게 해 줄지 고르는 일이 아니야. 함께 예수님을 믿고 섬길 사람을 세우는 일이지. 뽑은 뒤에도 서로 협조하고 기도해야 하고, 뽑힌 사람은 ‘하나님이 공동체를 통해 나를 세우셨구나’ 하는 마음으로 한 해 동안 하나님을 알기에 힘써야 해."
     }
   ];
   // ============================================================
   // 여기까지가 매주 교체하는 블록입니다.
   // ============================================================
 
-  var state = { step:-1, solved:0, muted:true, playerName:"" };
+  var state = { step:0, solved:0, muted:true };
   var audioCtx = null;
 
   function $(id){ return document.getElementById(id); }
@@ -280,10 +264,11 @@
   function showScreen(id){
     document.querySelectorAll(".screen").forEach(function(s){ s.classList.remove("active"); });
     $(id).classList.add("active");
+    try{ window.scrollTo(0,0); }catch(e){}
   }
 
   function setProgress(){
-    $("progress-label").textContent = state.step === -1 ? "모험 준비" : state.step === 4 ? "모험 완료!" : ("말씀의 문 " + (state.step+1) + " / 4");
+    $("progress-label").textContent = state.step >= QUIZ.length ? "이야기 완성!" : ("장면 " + (state.step+1) + " / 4");
     $("progress-count").textContent = state.solved + " / 4";
     $("progress-bar").style.width = Math.round((state.solved/4)*100) + "%";
     $("progress-wrap").setAttribute("aria-valuenow", String(state.solved));
@@ -329,27 +314,28 @@
     if (!state.muted) successSound();
   }
 
-  // ---------- keys ----------
+  // ---------- 진행 표시 ----------
   function renderKeys(){
     var row = $("keys-row"); row.innerHTML = "";
     for (var i=0;i<QUIZ.length;i++){
       var k = document.createElement("div");
       k.className = "key" + (i < state.solved ? " got" : "");
-      k.textContent = i < state.solved ? "🗝️" : "🔒";
+      k.textContent = i < state.solved ? "📜" : "○";
       row.appendChild(k);
     }
   }
 
-  // ---------- puzzle ----------
+  // ---------- 장면 ----------
   function renderRoom(idx){
     var room = QUIZ[idx];
     $("room-art").className = "scene-art theme-" + room.theme;
-    $("room-stage").textContent = "STAGE " + (idx+1) + " / 4";
+    $("room-stage").textContent = "장면 " + (idx+1) + " / 4";
     $("room-emoji").textContent = room.emoji;
     $("room-tag").textContent = room.room;
     $("room-story").textContent = room.story;
     $("room-q").textContent = room.q;
     $("btn-next").style.display = "none";
+    $("btn-next").textContent = (idx === QUIZ.length - 1) ? "이야기 마무리하기 →" : "다음 장면으로 →";
 
     var fb = $("room-feedback"); fb.className = "feedback"; fb.innerHTML = "";
 
@@ -367,13 +353,14 @@
   }
 
   function handleAnswer(btn, opt, room){
+    ensureAudio();
     var fb = $("room-feedback");
     if (opt.ok){
       successSound();
       btn.classList.add("correct");
       document.querySelectorAll("#room-options .option").forEach(function(o){ o.disabled = true; });
       fb.className = "feedback ok show";
-      fb.innerHTML = "<b>정답! 🗝️ 열쇠를 얻었어</b><br>" + room.explain;
+      fb.innerHTML = "<b>좋은 선택이야! ✨ 이야기가 이어져</b><br>" + room.explain;
       $("btn-next").style.display = "block";
       state.solved++;
       setProgress();
@@ -382,8 +369,9 @@
       failSound();
       btn.classList.add("wrong");
       setTimeout(function(){ btn.classList.remove("wrong"); }, 500);
+      var result = opt.r ? ("<b>이야기가 이렇게 흘러갔어 📖</b><br>" + opt.r + "<br><br>") : "";
       fb.className = "feedback hint show";
-      fb.innerHTML = "<b>다시 생각해볼까? 💡</b><br>" + room.hint;
+      fb.innerHTML = result + "<b>다시 생각해볼까? 💡</b><br>" + room.hint;
     }
   }
 
@@ -394,24 +382,20 @@
   }
 
   function goFinal(){
-    state.step = 4; state.solved = 4; setProgress();
-    if ($("final-name").value.trim() === "" && state.playerName){
-      $("final-name").value = state.playerName;
-    }
+    state.step = QUIZ.length; state.solved = QUIZ.length; setProgress();
+    $("verse-box").innerHTML = VERSE_HTML;
     $("status-line").textContent = "";
     showScreen("screen-final");
   }
 
   function resetGame(ask){
-    if (ask && state.step >= 0 && state.step < 4){
-      if (!window.confirm("처음부터 다시 시작할까? 지금까지 연 방은 초기화돼.")) return;
+    if (ask && state.step < QUIZ.length && state.solved > 0){
+      if (!window.confirm("처음부터 다시 시작할까? 지금까지의 진행은 초기화돼.")) return;
     }
-    state.step = -1; state.solved = 0;
-    $("player-name").value = ""; $("final-name").value = ""; $("final-note").value = "";
-    $("status-line").textContent = "";
-    $("name-error").style.display = "none";
-    setProgress();
-    showScreen("screen-intro");
+    state.step = 0; state.solved = 0;
+    $("final-name").value = ""; $("final-note").value = ""; $("pastor-note").value = "";
+    $("status-line").textContent = ""; $("pastor-status").textContent = "";
+    renderRoom(0);
   }
 
   // ---------- 구글 폼으로 조용히 제출 ----------
@@ -448,13 +432,20 @@
   function setStatus(msg){ $("status-line").textContent = msg; }
 
   async function shareMessage(){
-    var name = ($("final-name").value || state.playerName || "").trim() || "이름 없음";
+    var name = $("final-name").value.trim();
+    if (!name){
+      setStatus("이름을 먼저 적어줘!");
+      $("final-name").focus();
+      return;
+    }
     var note = $("final-note").value.trim();
     if (!note){
       setStatus("선생님께 전하고 싶은 말이나 기도제목을 적어주면 보내드릴게!");
       $("final-note").focus();
       return;
     }
+    var btn = $("btn-share");
+    btn.disabled = true;
     setStatus("보내는 중...");
     try{
       await submitToSheet("선생님", name, note);
@@ -463,15 +454,23 @@
       var ok = await copyText("[선생님께] " + name + "\n" + note);
       setStatus(ok ? "전송에 실패했어요(네트워크 확인). 대신 복사했으니 직접 전해줘 📋" : "전송에 실패했어요. 와이파이/데이터 연결을 확인하고 다시 눌러줘.");
     }
+    btn.disabled = false;
   }
   async function sendToPastor(){
-    var name = ($("final-name").value || state.playerName || "").trim() || "이름 없음";
+    var name = $("final-name").value.trim();
+    if (!name){
+      $("pastor-status").textContent = "위의 이름 칸에 이름을 먼저 적어줘!";
+      $("final-name").focus();
+      return;
+    }
     var note = $("pastor-note").value.trim();
     if (!note){
       $("pastor-status").textContent = "목사님께 전하고 싶은 말이나 기도제목을 적어주면 보내드릴게!";
       $("pastor-note").focus();
       return;
     }
+    var btn = $("btn-pastor-send");
+    btn.disabled = true;
     $("pastor-status").textContent = "보내는 중...";
     try{
       await submitToSheet("목사님", name, note);
@@ -480,32 +479,20 @@
       var ok = await copyText("[목사님께] " + name + "\n" + note);
       $("pastor-status").textContent = ok ? "전송에 실패했어요(네트워크 확인). 대신 복사했으니 직접 전해줘 📋" : "전송에 실패했어요. 와이파이/데이터 연결을 확인하고 다시 눌러줘.";
     }
+    btn.disabled = false;
   }
 
   // ---------- init ----------
   function init(){
-    loadMuted(); setProgress();
+    loadMuted();
 
     $("sound-btn").addEventListener("click", toggleMuted);
     $("restart-btn").addEventListener("click", function(){ resetGame(true); });
-
-    $("btn-start").addEventListener("click", function(){
-      var nameVal = $("player-name").value.trim();
-      if (!nameVal){
-        $("name-error").style.display = "block";
-        $("player-name").focus();
-        return;
-      }
-      $("name-error").style.display = "none";
-      ensureAudio();
-      state.playerName = nameVal;
-      state.step = 0;
-      renderRoom(0);
-    });
-
     $("btn-next").addEventListener("click", nextRoom);
     $("btn-share").addEventListener("click", shareMessage);
     $("btn-pastor-send").addEventListener("click", sendToPastor);
+
+    renderRoom(0);
   }
 
   document.addEventListener("DOMContentLoaded", init);
