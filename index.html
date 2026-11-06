@@ -162,7 +162,7 @@
     </div>
     <div class="card">
       <h2>💌 선생님께 전하기</h2>
-      <p class="muted" style="margin-bottom:12px;">아래에 적고 바로 보내보자. 심방이나 안부 연락을 받을 수 있어!</p>
+      <p class="muted" style="margin-bottom:12px;">아래에 적고 제출하면 바로 전달돼요. 심방이나 안부 연락을 받을 수 있어!</p>
       <label for="final-name">이름</label>
       <input type="text" id="final-name" placeholder="이름을 입력해줘">
       <label for="final-note">오늘 말씀 중 나누고 싶은 것 · 기도제목</label>
@@ -174,10 +174,10 @@
     </div>
     <div class="card">
       <h2>🙏 목사님께 하고 싶은 말 · 기도제목 <span class="muted" style="font-weight:400;font-size:12px;">(선택)</span></h2>
-      <p class="muted" style="margin-bottom:12px;">개인적으로 하고 싶은 말이나 기도제목이 있으면 적어줘. 목사님 문자로 바로 보내드릴게!</p>
+      <p class="muted" style="margin-bottom:12px;">개인적으로 하고 싶은 말이나 기도제목이 있으면 적어줘. 제출하면 바로 목사님께 전달돼요!</p>
       <textarea id="pastor-note" placeholder="예: 목사님, 오늘 설교 듣고 이런 생각이 들었어요... / 요즘 이런 기도제목이 있어요..."></textarea>
       <div class="action-row">
-        <button class="btn outline" id="btn-pastor-sms" style="margin-top:0;">📩 목사님께 문자 보내기</button>
+        <button class="btn outline" id="btn-pastor-send" style="margin-top:0;">📨 목사님께 보내기</button>
       </div>
       <div class="status-line" id="pastor-status"></div>
     </div>
@@ -199,7 +199,16 @@
     '<div class="muted" style="margin-top:10px;">— 로마서 1:16-17</div>';
 
   var SERMON_DATE = "26년10월18일";
-  var PASTOR_PHONE = "01032113871"; // 목사님 휴대폰 번호(문자용, 하이픈 없이) — 바뀌면 여기만 수정하면 됩니다
+
+  // 구글 폼으로 바로 제출 — "중고등부 설교 피드백" 폼 연결 정보
+  var FORM_ACTION = "https://docs.google.com/forms/d/e/1FAIpQLSfa4PJcpiJBWsfry2Lo1SUxiwKTtEh_V_AmPQ_6WRwOKeLYGg/formResponse";
+  var FORM_ENTRY = {
+    name: "entry.1626522824",      // 이름
+    from: "entry.1380117152",      // 보낸사람 구분 (선생님 / 목사님)
+    content: "entry.1763285252",   // 내용
+    sermonDate: "entry.820953926", // 설교일자
+    submitDate: "entry.112201991"  // 제출일자
+  };
 
   var QUIZ = [
     {
@@ -405,13 +414,24 @@
     showScreen("screen-intro");
   }
 
-  // ---------- teacher contact ----------
-  function buildMessage(){
-    var name = $("final-name").value.trim() || "이름 없음";
-    var note = $("final-note").value.trim();
-    var msg = "[중고등부 말씀 방탈출 완료]\n이름: " + name + "\n본문: 로마서 1:16-17\n" + SERMON_DATE + " 설교\n";
-    if (note) msg += "나눔 · 기도제목: " + note;
-    return msg.trim();
+  // ---------- 구글 폼으로 조용히 제출 ----------
+  function nowKST(){
+    try{ return new Date().toLocaleString("ko-KR", { timeZone: "Asia/Seoul" }); }
+    catch(e){ return new Date().toString(); }
+  }
+  function submitToSheet(from, name, content){
+    var body = new URLSearchParams();
+    body.append(FORM_ENTRY.name, name);
+    body.append(FORM_ENTRY.from, from);
+    body.append(FORM_ENTRY.content, content);
+    body.append(FORM_ENTRY.sermonDate, SERMON_DATE + " 설교");
+    body.append(FORM_ENTRY.submitDate, nowKST());
+    return fetch(FORM_ACTION, {
+      method: "POST",
+      mode: "no-cors",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: body.toString()
+    });
   }
   async function copyText(text){
     try{
@@ -428,72 +448,43 @@
   function setStatus(msg){ $("status-line").textContent = msg; }
 
   async function shareMessage(){
-    var text = buildMessage();
-    if (navigator.share){
-      try{
-        await navigator.share({ title:"말씀 방탈출 완료", text:text });
-        setStatus("공유 창이 열렸어요. 받을 분을 선택해서 보내줘!");
-        return;
-      }catch(e){
-        if (e && e.name === "AbortError"){ setStatus("공유를 취소했어요."); return; }
-      }
-    }
-    var ok = await copyText(text);
-    if (ok && isKakaoInApp()){
-      setStatus("복사했어요 📋 지금 카카오톡 안에서 보고 있어서 공유가 제한돼요. 맨 위 '외부 브라우저로 열기'를 누른 뒤 다시 시도하면 카톡으로 바로 열려요!");
+    var name = ($("final-name").value || state.playerName || "").trim() || "이름 없음";
+    var note = $("final-note").value.trim();
+    if (!note){
+      setStatus("선생님께 전하고 싶은 말이나 기도제목을 적어주면 보내드릴게!");
+      $("final-note").focus();
       return;
     }
-    setStatus(ok ? "복사했어요! 카톡/문자에 붙여넣기 해줘 📋" : "복사에 실패했어요. 메시지를 길게 눌러 직접 복사해줘.");
+    setStatus("보내는 중...");
+    try{
+      await submitToSheet("선생님", name, note);
+      setStatus("✅ 선생님께 전달했어요! 확인하시고 연락 주실 거예요.");
+    }catch(e){
+      var ok = await copyText("[선생님께] " + name + "\n" + note);
+      setStatus(ok ? "전송에 실패했어요(네트워크 확인). 대신 복사했으니 직접 전해줘 📋" : "전송에 실패했어요. 와이파이/데이터 연결을 확인하고 다시 눌러줘.");
+    }
   }
-  function sendToPastorSMS(){
+  async function sendToPastor(){
+    var name = ($("final-name").value || state.playerName || "").trim() || "이름 없음";
     var note = $("pastor-note").value.trim();
     if (!note){
-      $("pastor-status").textContent = "목사님께 전하고 싶은 말을 적어주면 보내드릴게!";
+      $("pastor-status").textContent = "목사님께 전하고 싶은 말이나 기도제목을 적어주면 보내드릴게!";
       $("pastor-note").focus();
       return;
     }
-    var name = ($("final-name").value || state.playerName || "").trim() || "이름 없음";
-    var body = "[중고등부 말씀 방탈출] " + name + " 학생이 목사님께 드리는 말씀\n본문: 로마서 1:16-17 (" + SERMON_DATE + " 설교)\n" + note;
-    var ua = (navigator.userAgent || "");
-    var isIOS = /iPad|iPhone|iPod/.test(ua);
-    var sep = isIOS ? "&" : "?";
-    var url = "sms:" + PASTOR_PHONE + sep + "body=" + encodeURIComponent(body);
+    $("pastor-status").textContent = "보내는 중...";
     try{
-      window.location.href = url;
-      $("pastor-status").textContent = "문자 앱이 열렸어요. 내용 확인하고 전송 버튼만 눌러줘!";
+      await submitToSheet("목사님", name, note);
+      $("pastor-status").textContent = "✅ 목사님께 전달했어요! 확인하시고 연락 주실 거예요.";
     }catch(e){
-      copyText(body).then(function(copied){
-        $("pastor-status").textContent = copied
-          ? "문자 앱을 열지 못했어요. 대신 복사했으니 문자 앱에 붙여넣어줘 📋"
-          : "문자 앱을 열지 못했어요. 메시지를 길게 눌러 직접 복사해줘.";
-      });
+      var ok = await copyText("[목사님께] " + name + "\n" + note);
+      $("pastor-status").textContent = ok ? "전송에 실패했어요(네트워크 확인). 대신 복사했으니 직접 전해줘 📋" : "전송에 실패했어요. 와이파이/데이터 연결을 확인하고 다시 눌러줘.";
     }
-  }
-
-  // ---------- in-app browser banner ----------
-  function isKakaoInApp(){
-    try{ return navigator.userAgent.toLowerCase().indexOf("kakaotalk") > -1; }catch(e){ return false; }
-  }
-  function showInAppBanner(){
-    if (!isKakaoInApp()) return;
-    var b = document.createElement("div");
-    b.id = "inapp-banner";
-    b.style.cssText = "position:fixed;top:0;left:0;right:0;z-index:999;background:#3a2a06;color:#ffd966;padding:10px 14px;font-size:12.5px;line-height:1.5;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,.35);";
-    b.innerHTML =
-      '⚠️ 카카오톡 안에서 열람 중이에요. 공유·외부앱 연결이 막힐 수 있어요.' +
-      '<br><button id="open-ext-btn" type="button" style="margin-top:6px;padding:6px 12px;border-radius:8px;border:none;background:#ffd966;color:#3a2a06;font-weight:700;font-size:12.5px;">외부 브라우저로 열기</button>' +
-      '<button id="close-banner-btn" type="button" aria-label="닫기" style="margin-left:6px;margin-top:6px;padding:6px 10px;border-radius:8px;border:1px solid #ffd966;background:transparent;color:#ffd966;font-size:12.5px;">닫기</button>' +
-      '<div style="margin-top:4px;opacity:.85;">자동으로 안 열리면: 오른쪽 아래 "···" → "다른 브라우저로 열기"(안드로이드) / 공유 아이콘 → Safari(아이폰)</div>';
-    document.body.prepend(b);
-    document.getElementById("open-ext-btn").addEventListener("click", function(){
-      try{ location.href = "kakaotalk://web/openExternal?url=" + encodeURIComponent(location.href); }catch(e){}
-    });
-    document.getElementById("close-banner-btn").addEventListener("click", function(){ b.remove(); });
   }
 
   // ---------- init ----------
   function init(){
-    loadMuted(); setProgress(); showInAppBanner();
+    loadMuted(); setProgress();
 
     $("sound-btn").addEventListener("click", toggleMuted);
     $("restart-btn").addEventListener("click", function(){ resetGame(true); });
@@ -514,7 +505,7 @@
 
     $("btn-next").addEventListener("click", nextRoom);
     $("btn-share").addEventListener("click", shareMessage);
-    $("btn-pastor-sms").addEventListener("click", sendToPastorSMS);
+    $("btn-pastor-send").addEventListener("click", sendToPastor);
   }
 
   document.addEventListener("DOMContentLoaded", init);
