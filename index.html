@@ -3,402 +3,918 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<meta name="description" content="사도행전 6:1-7, 중고등부 선택형 스토리 게임">
-<title>성령과 지혜가 충만한 리더 | 말씀 이야기</title>
+<meta name="description" content="이사야 43:1-7, 중고등부 말씀 방탈출 게임">
+<title>두려움의 방 | 말씀 방탈출</title>
 <style>
-  :root{
-    --bg1:#140f2e; --bg2:#271a4d; --bg3:#3d2470;
-    --gold:#f6c453; --gold-dark:#d9a62e;
-    --card:rgba(255,255,255,0.07); --card-border:rgba(255,255,255,0.14);
-    --text:#f5f3ff; --muted:#b7aede;
-    --ok:#4ade80; --bad:#f87171; --radius:20px;
-  }
-  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
-  html,body{margin:0;padding:0;height:100%;}
-  body{
-    font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
-    background:
-      radial-gradient(circle at 15% 15%, rgba(246,196,83,0.14), transparent 40%),
-      radial-gradient(circle at 85% 8%, rgba(255,255,255,0.08), transparent 35%),
-      radial-gradient(circle at 70% 85%, rgba(246,196,83,0.08), transparent 40%),
-      linear-gradient(160deg, var(--bg1), var(--bg2) 55%, var(--bg3));
-    color:var(--text); min-height:100vh; overflow-x:hidden;
-  }
-  #app{max-width:480px; margin:0 auto; min-height:100vh; display:flex; flex-direction:column;
-    padding: calc(12px + env(safe-area-inset-top,0px)) 16px calc(16px + env(safe-area-inset-bottom,0px));}
+/* ============================================================
+   팔레트 — 어두운 돌방을 밝히는 등불 하나 (다크 전용, 단일 세계관)
+   레이아웃 — 중앙 1열 "방" 카드가 화면을 가득 채우고, 단서를 풀 때마다
+   상단 자물쇠(이사야 __장 __절)가 한 글자씩 채워진다.
+   ============================================================ */
+:root{
+  color-scheme: dark;
+  --bg: #100f14;
+  --bg-vault: radial-gradient(ellipse 70% 55% at 50% -10%, #2a2416 0%, #100f14 55%);
+  --panel: #1a1823;
+  --panel-2: #221f2d;
+  --inset: #15131c;
+  --line: #332e3f;
+  --fg: #ece6da;
+  --muted: #9b94a8;
+  --muted-2: #6f6a7d;
+  --accent: #e8a23d;
+  --accent-2: #f6c66b;
+  --accent-dim: #8a6a2e;
+  --danger: #c0685a;
+  --serif: "Noto Serif KR", "Nanum Myeongjo", serif;
+  --sans: "Noto Sans KR", -apple-system, "Pretendard", sans-serif;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  min-height:100%;
+  background: var(--bg) var(--bg-vault);
+  color: var(--fg);
+  font-family: var(--sans);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-block-end: calc(32px + env(safe-area-inset-bottom, 0px));
+  -webkit-font-smoothing: antialiased;
+}
+html, body{ height:100%; }
 
-  header{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:12px;}
-  .brand{font-size:12.5px; font-weight:800; color:var(--gold); letter-spacing:.2px; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
-  .tools{display:flex; gap:7px; flex-shrink:0;}
-  .tool-btn{min-width:40px; min-height:38px; border-radius:10px; border:1px solid var(--card-border); background:var(--card); color:var(--text); font-size:12.5px; padding:0 10px; display:flex; align-items:center; justify-content:center; gap:4px;}
+/* ---------- 상단 고정 바 ---------- */
+.topbar{
+  position: sticky;
+  top: env(safe-area-inset-top, 0px);
+  z-index: 20;
+  margin: 0 -16px;
+  padding: 14px max(16px, env(safe-area-inset-left,0px)) 12px max(16px, env(safe-area-inset-right,0px));
+  background: linear-gradient(180deg, rgba(16,15,20,.97) 70%, rgba(16,15,20,0));
+  backdrop-filter: blur(2px);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+}
+.brand{
+  display:flex; align-items:center; gap:8px;
+  font-family: var(--serif);
+  font-weight:700;
+  font-size: 15px;
+  letter-spacing: .01em;
+  color: var(--accent-2);
+  white-space:nowrap;
+}
+.brand svg{ width:18px; height:18px; flex:none; }
+.lock-readout{
+  display:flex; align-items:baseline; gap:6px;
+  font-family: var(--serif);
+  font-size: 14px;
+  color: var(--muted);
+  background: var(--inset);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 6px 14px;
+  white-space: nowrap;
+}
+.lock-readout b{
+  font-variant-numeric: tabular-nums;
+  color: var(--fg);
+}
+.lock-digit{
+  display:inline-block;
+  min-width: 1ch;
+  color: var(--muted-2);
+  transition: color .4s, text-shadow .4s;
+}
+.lock-digit.lit{
+  color: var(--accent-2);
+  text-shadow: 0 0 10px rgba(246,198,107,.55);
+}
+.timer{
+  font-variant-numeric: tabular-nums;
+  font-size: 13px;
+  color: var(--muted-2);
+  white-space: nowrap;
+}
 
-  .meta-row{display:flex; justify-content:space-between; align-items:center; font-size:12.5px; color:var(--muted); margin-bottom:6px;}
-  #progress-wrap{height:9px; background:rgba(255,255,255,0.1); border-radius:20px; overflow:hidden; border:1px solid rgba(255,255,255,0.12); margin-bottom:16px;}
-  #progress-bar{height:100%; width:0%; background:linear-gradient(90deg,var(--gold-dark),var(--gold)); border-radius:20px; transition:width .5s ease;}
+/* ---------- 레이아웃 ---------- */
+main{
+  max-width: 560px;
+  margin: 0 auto;
+  min-width: 0;
+}
+.screen{ display:none; }
+.screen.active{ display:block; animation: fadein .5s ease both; }
+@keyframes fadein{ from{opacity:0; transform:translateY(6px)} to{opacity:1; transform:translateY(0)} }
 
-  .screen{display:none; flex:1; flex-direction:column; animation:fadeIn .4s ease;}
-  .screen.active{display:flex;}
-  @keyframes fadeIn{from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:translateY(0);}}
-  @media (prefers-reduced-motion: reduce){ *,*::before,*::after{animation:none!important; transition:none!important;} }
+.room-card{
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 26px 22px 24px;
+  margin-top: 18px;
+  box-shadow: 0 30px 60px -30px rgba(0,0,0,.6);
+  position: relative;
+  overflow:hidden;
+}
+.room-card::before{
+  content:"";
+  position:absolute; inset:0 0 auto 0; height:1px;
+  background: linear-gradient(90deg, transparent, var(--accent-dim), transparent);
+}
 
-  .card{background:var(--card); border:1px solid var(--card-border); border-radius:var(--radius); padding:20px; margin-bottom:14px; backdrop-filter:blur(6px);}
-  h1{font-size:clamp(21px,6vw,27px); margin:.2em 0; line-height:1.35;}
-  h2{font-size:clamp(17.5px,5vw,20.5px); margin:.2em 0 10px; line-height:1.4;}
-  p{line-height:1.65; color:var(--text); font-size:15px; margin:0 0 10px;}
-  .muted{color:var(--muted); font-size:13.5px;}
-  .center{text-align:center;}
-  .badge{display:inline-block; background:rgba(246,196,83,0.15); color:var(--gold); border:1px solid rgba(246,196,83,0.4); border-radius:20px; padding:4px 12px; font-size:12.5px; margin-bottom:10px;}
+.room-eyebrow{
+  font-size: 12.5px;
+  letter-spacing: .14em;
+  color: var(--accent);
+  text-transform: uppercase;
+  font-weight:600;
+  display:flex; align-items:center; gap:8px;
+}
+.room-title{
+  font-family: var(--serif);
+  font-weight: 700;
+  font-size: clamp(22px, 6vw, 28px);
+  margin: 6px 0 14px;
+  text-wrap: balance;
+  line-height:1.3;
+}
+.flavor{
+  font-size: 14.5px;
+  line-height: 1.75;
+  color: var(--muted);
+  background: var(--inset);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--accent-dim);
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin-bottom: 18px;
+}
+.flavor b{ color: var(--fg); font-weight:600; }
+.verse-ref{
+  display:inline-block;
+  margin-top:8px;
+  font-family: var(--serif);
+  font-size: 13px;
+  color: var(--accent-2);
+}
 
-  .btn{display:block; width:100%; padding:15px; border-radius:14px; border:none; background:linear-gradient(135deg,var(--gold),var(--gold-dark)); color:#2a1b00; font-weight:700; font-size:16px; cursor:pointer; margin-top:10px; box-shadow:0 6px 16px rgba(246,196,83,0.25);}
-  .btn:active{transform:scale(.98);}
-  .btn[disabled]{opacity:.6;}
-  .btn.secondary{background:transparent; border:1px solid var(--card-border); color:var(--text); box-shadow:none;}
-  .btn.outline{background:rgba(255,255,255,0.05); border:1px solid var(--card-border); color:var(--text); box-shadow:none; font-weight:700;}
+.question{
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.6;
+  margin: 2px 0 14px;
+  text-wrap: balance;
+}
 
-  /* scene art */
-  .scene-art{position:relative; height:clamp(120px,27vw,170px); border:1px solid var(--card-border); border-radius:18px; margin-bottom:14px; overflow:hidden; display:flex; align-items:center; justify-content:center;}
-  .scene-art .emoji{font-size:clamp(44px,13vw,62px); filter:drop-shadow(0 8px 10px rgba(0,0,0,.35)); animation:float 3.2s ease-in-out infinite;}
-  .scene-art .tag{position:absolute; top:10px; left:12px; font-size:11px; background:rgba(0,0,0,.35); border:1px solid rgba(255,255,255,.3); padding:3px 10px; border-radius:20px; font-weight:700;}
-  @keyframes float{0%,100%{transform:translateY(0);} 50%{transform:translateY(-6px);}}
-  .theme-0{background:linear-gradient(160deg,#4b2f73,#241440);}
-  .theme-1{background:linear-gradient(160deg,#5b3a86,#2c1854);}
-  .theme-2{background:linear-gradient(160deg,#1f4f7a,#122840);}
-  .theme-3{background:linear-gradient(160deg,#8a6a1f,#3d2d0d);}
-  .theme-4{background:linear-gradient(160deg,#4a5568,#1f2733);}
+.options{
+  display:flex; flex-direction:column; gap:10px;
+}
+.opt-btn{
+  text-align:left;
+  width:100%;
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  color: var(--fg);
+  border-radius: 12px;
+  padding: 13px 16px;
+  font-size: 14.5px;
+  font-family: var(--sans);
+  line-height:1.5;
+  cursor:pointer;
+  transition: border-color .2s, background .2s, transform .15s;
+}
+.opt-btn:hover{ border-color: var(--accent-dim); }
+.opt-btn:active{ transform: scale(.985); }
+.opt-btn.correct{
+  border-color: var(--accent);
+  background: linear-gradient(180deg, rgba(232,162,61,.16), rgba(232,162,61,.05));
+  box-shadow: 0 0 0 1px var(--accent) inset;
+}
+.opt-btn.wrong{
+  border-color: var(--danger);
+  animation: shake .4s;
+}
+.opt-btn[disabled]{ cursor:default; }
+@keyframes shake{
+  10%,90%{ transform: translateX(-2px) }
+  20%,80%{ transform: translateX(4px) }
+  30%,50%,70%{ transform: translateX(-7px) }
+  40%,60%{ transform: translateX(7px) }
+}
 
-  .room-tag{font-size:13px; color:var(--gold); font-weight:700; margin-bottom:6px;}
-  .story{font-style:italic; color:var(--muted); font-size:14px; margin-bottom:14px; line-height:1.7;}
+.hint{
+  min-height: 20px;
+  font-size: 13px;
+  color: var(--danger);
+  margin-top: 10px;
+}
 
-  .option{display:block; width:100%; text-align:left; padding:14px 16px; margin-bottom:10px; border-radius:14px; border:1px solid var(--card-border); background:rgba(255,255,255,0.04); color:var(--text); font-size:14.5px; line-height:1.55; cursor:pointer;}
-  .option:active{transform:scale(.985);}
-  .option.correct{border-color:var(--ok); background:rgba(74,222,128,0.15);}
-  .option.wrong{border-color:var(--bad); background:rgba(248,113,113,0.15); animation:shake .35s;}
-  .option[disabled]{opacity:.55;}
-  @keyframes shake{0%,100%{transform:translateX(0);}25%{transform:translateX(-5px);}75%{transform:translateX(5px);}}
+/* ---------- 열쇠 보상 ---------- */
+.key-reveal{
+  display:none;
+  align-items:center;
+  gap:14px;
+  margin-top: 18px;
+  padding: 16px;
+  background: var(--inset);
+  border: 1px solid var(--accent-dim);
+  border-radius: 12px;
+}
+.key-reveal.show{ display:flex; animation: fadein .5s ease both; }
+.key-num{
+  flex:none;
+  width: 48px; height: 48px;
+  border-radius: 50%;
+  display:flex; align-items:center; justify-content:center;
+  font-family: var(--serif);
+  font-size: 22px;
+  font-weight:700;
+  color: #1a1407;
+  background: radial-gradient(circle at 35% 30%, var(--accent-2), var(--accent) 70%);
+  box-shadow: 0 0 22px rgba(246,198,107,.55);
+}
+.key-text{ font-size: 13.5px; color: var(--muted); line-height:1.6; }
+.key-text b{ color: var(--accent-2); }
 
-  .feedback{border-radius:14px; padding:14px 16px; margin-top:4px; font-size:14px; line-height:1.65; display:none;}
-  .feedback.show{display:block;}
-  .feedback.ok{background:rgba(74,222,128,0.12); border:1px solid rgba(74,222,128,0.4);}
-  .feedback.hint{background:rgba(248,113,113,0.12); border:1px solid rgba(248,113,113,0.4);}
-  .feedback b{color:var(--gold);}
+/* ---------- 버튼 ---------- */
+.primary-btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:8px;
+  width:100%;
+  margin-top: 20px;
+  background: linear-gradient(180deg, var(--accent-2), var(--accent));
+  color: #1a1407;
+  font-family: var(--sans);
+  font-weight: 700;
+  font-size: 15px;
+  border: none;
+  border-radius: 12px;
+  padding: 14px 18px;
+  cursor:pointer;
+  opacity: .35;
+  pointer-events: none;
+  transition: opacity .3s, transform .15s;
+}
+.primary-btn.ready{ opacity:1; pointer-events:auto; }
+.primary-btn:active.ready{ transform: scale(.98); }
+.ghost-btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:8px;
+  width:100%;
+  margin-top: 10px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 13.5px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 11px 16px;
+  cursor:pointer;
+}
 
-  .keys{display:flex; gap:8px; margin:4px 0 0; flex-wrap:wrap; justify-content:center;}
-  .key{width:38px;height:38px; border-radius:10px; display:flex;align-items:center;justify-content:center; font-size:17px; border:1px solid var(--card-border); background:rgba(255,255,255,0.03); transition:all .3s;}
-  .key.got{background:rgba(246,196,83,0.2); border-color:var(--gold); transform:scale(1.08);}
+/* ---------- 인트로 ---------- */
+.intro-lamp{
+  width: 92px; height: 92px;
+  margin: 10px auto 4px;
+  display:block;
+}
+.intro-wrap{ text-align:center; padding-top: 6px; }
+.intro-title{
+  font-family: var(--serif);
+  font-weight:700;
+  font-size: clamp(26px, 8vw, 34px);
+  margin: 14px 0 10px;
+  color: var(--fg);
+}
+.intro-sub{
+  font-size: 14.5px;
+  color: var(--muted);
+  line-height:1.8;
+  max-width: 420px;
+  margin: 0 auto 6px;
+}
+.intro-meta{
+  margin-top: 18px;
+  display:flex; justify-content:center; gap:18px;
+  font-size: 12.5px;
+  color: var(--muted-2);
+}
+.intro-meta span{ display:flex; align-items:center; gap:6px; }
 
-  textarea, input[type=text]{width:100%; padding:12px 14px; border-radius:12px; border:1px solid var(--card-border); background:rgba(255,255,255,0.06); color:var(--text); font-size:14.5px; font-family:inherit; margin-bottom:10px;}
-  textarea::placeholder, input::placeholder{color:var(--muted);}
-  textarea{resize:none; min-height:72px;}
-  label{display:block; font-size:13px; color:var(--muted); margin-bottom:6px; font-weight:700;}
+/* ---------- 3구역 이름 입력 / 문장 맞추기 ---------- */
+.name-row{
+  display:flex; gap:8px; margin-bottom: 16px;
+}
+.name-row input{
+  flex:1; min-width:0;
+  background: var(--inset);
+  border: 1px solid var(--line);
+  color: var(--fg);
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-size: 15px;
+  font-family: var(--sans);
+}
+.name-row input:focus{ outline: 2px solid var(--accent-dim); outline-offset:1px; }
+.name-row button{
+  flex:none;
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  color: var(--accent-2);
+  border-radius: 10px;
+  padding: 0 16px;
+  font-weight:600;
+  cursor:pointer;
+}
+.field-label{
+  display:block;
+  font-size: 12.5px;
+  color: var(--muted);
+  font-weight:600;
+  margin-bottom:6px;
+}
+.field-input, .field-textarea{
+  width:100%;
+  background: var(--inset);
+  border: 1px solid var(--line);
+  color: var(--fg);
+  border-radius: 10px;
+  padding: 11px 13px;
+  font-size: 14px;
+  font-family: var(--sans);
+  margin-bottom: 12px;
+}
+.field-textarea{ resize:none; min-height: 76px; line-height:1.6; }
+.field-input:focus, .field-textarea:focus{ outline: 2px solid var(--accent-dim); outline-offset:1px; }
+.deliver-btn{
+  width:100%;
+  background: linear-gradient(180deg, var(--accent-2), var(--accent));
+  color:#1a1407;
+  font-weight:700;
+  font-size:14.5px;
+  font-family: var(--sans);
+  border:none;
+  border-radius: 10px;
+  padding: 12px 16px;
+  cursor:pointer;
+}
+.deliver-btn:active{ transform: scale(.98); }
+.deliver-btn.outline{
+  background: var(--panel-2);
+  color: var(--accent-2);
+  border: 1px solid var(--line);
+}
+.deliver-status{
+  min-height:18px;
+  text-align:center;
+  font-size:12.5px;
+  color: var(--accent-2);
+  margin-top:8px;
+  line-height:1.6;
+}
+.deliver-note{
+  font-size:13px;
+  color: var(--muted);
+  line-height:1.6;
+  margin: -4px 0 14px;
+}
 
-  .verse-box{border-left:3px solid var(--gold); padding:14px 16px; margin:4px 0 0; background:rgba(246,196,83,0.07); border-radius:0 12px 12px 0; font-size:14.5px; line-height:1.85; color:var(--text);}
-  .verse-num{color:var(--gold); font-weight:800; margin-right:4px;}
+.personal-line{
+  display:none;
+  font-family: var(--serif);
+  font-size: 17px;
+  color: var(--accent-2);
+  text-align:center;
+  padding: 14px;
+  margin-bottom: 16px;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+.personal-line.show{ display:block; animation: fadein .5s ease both; }
 
-  .action-row{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:4px;}
-  .status-line{text-align:center; font-size:13px; color:var(--aqua,#8ae7d9); min-height:18px; margin-top:10px;}
+.assembled{
+  min-height: 52px;
+  display:flex; flex-wrap:wrap; gap:8px;
+  padding: 12px;
+  background: var(--inset);
+  border: 1px dashed var(--line);
+  border-radius: 10px;
+  margin-bottom: 12px;
+  align-items:flex-start;
+  align-content:flex-start;
+}
+.assembled:empty::before{
+  content: "아래 단어를 순서대로 눌러 문장을 완성하세요";
+  color: var(--muted-2);
+  font-size: 13px;
+}
+.pool{
+  display:flex; flex-wrap:wrap; gap:8px;
+}
+.word-chip{
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  color: var(--fg);
+  border-radius: 999px;
+  padding: 9px 16px;
+  font-size: 14.5px;
+  font-weight:600;
+  cursor:pointer;
+  font-family: var(--sans);
+}
+.word-chip.placed{
+  background: linear-gradient(180deg, rgba(232,162,61,.18), rgba(232,162,61,.06));
+  border-color: var(--accent-dim);
+  color: var(--accent-2);
+}
+.word-chip:active{ transform: scale(.96); }
 
-  footer.note{text-align:center; font-size:12px; color:var(--muted); margin-top:auto; padding-top:16px;}
+/* ---------- 결합의 방 ---------- */
+.lock-dial-row{
+  display:flex; justify-content:center; gap:14px;
+  margin: 22px 0 8px;
+}
+.dial{
+  width: 68px; height: 84px;
+  border-radius: 12px;
+  background: var(--inset);
+  border: 1px solid var(--line);
+  display:flex; align-items:center; justify-content:center;
+  font-family: var(--serif);
+  font-size: 34px;
+  font-weight:700;
+  color: var(--muted-2);
+  position:relative;
+  transition: color .4s, border-color .4s, box-shadow .4s;
+}
+.dial small{
+  position:absolute; top:6px; left:0; right:0;
+  text-align:center;
+  font-family: var(--sans);
+  font-size: 10px;
+  font-weight:600;
+  letter-spacing:.06em;
+  color: var(--muted-2);
+}
+.dial.filled{
+  color: var(--accent-2);
+  border-color: var(--accent-dim);
+  box-shadow: 0 0 18px rgba(246,198,107,.3);
+}
+.ref-caption{
+  text-align:center;
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+
+/* ---------- 문 열림 / 결말 ---------- */
+.door-wrap{
+  position:relative;
+  height: 150px;
+  margin: 4px 0 20px;
+  border-radius: 14px;
+  overflow:hidden;
+  background: radial-gradient(ellipse at 50% 50%, #3a2c10 0%, #100f14 75%);
+}
+.door-leaf{
+  position:absolute; top:0; bottom:0; width:50%;
+  background: linear-gradient(180deg, #221f2d, #15131c);
+  border: 1px solid var(--line);
+  transition: transform 1.1s cubic-bezier(.65,0,.35,1);
+}
+.door-leaf.l{ left:0; border-top-left-radius:14px; border-bottom-left-radius:14px; }
+.door-leaf.r{ right:0; border-top-right-radius:14px; border-bottom-right-radius:14px; }
+.door-wrap.open .door-leaf.l{ transform: translateX(-100%); }
+.door-wrap.open .door-leaf.r{ transform: translateX(100%); }
+.door-glow{
+  position:absolute; inset:0;
+  display:flex; align-items:center; justify-content:center;
+  font-family: var(--serif);
+  color: var(--accent-2);
+  font-size: 13px;
+  letter-spacing: .1em;
+}
+
+.final-verse{
+  font-family: var(--serif);
+  font-size: 18px;
+  line-height: 1.95;
+  color: var(--fg);
+  text-align:center;
+  padding: 4px 4px 14px;
+}
+.final-verse b{ color: var(--accent-2); }
+.final-ref{
+  text-align:center;
+  font-size: 13px;
+  color: var(--accent);
+  margin-top: -4px;
+  margin-bottom: 18px;
+}
+.divider{
+  height:1px;
+  background: linear-gradient(90deg, transparent, var(--line), transparent);
+  margin: 18px 0;
+}
+.section-label{
+  font-size: 12px;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  color: var(--muted-2);
+  font-weight:700;
+  margin-bottom:10px;
+}
+.reflect-q{
+  font-size: 14px;
+  line-height:1.7;
+  color: var(--muted);
+  margin-bottom:10px;
+  padding-left: 18px;
+  position:relative;
+}
+.reflect-q::before{
+  content: "·";
+  position:absolute; left:4px; top:0;
+  color: var(--accent);
+  font-weight:900;
+}
+.more-link{
+  background:none; border:none;
+  color: var(--accent);
+  font-size: 13px;
+  font-weight:600;
+  cursor:pointer;
+  padding: 4px 0;
+}
+.stat-row{
+  display:flex; justify-content:center; gap:22px;
+  margin: 18px 0 4px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.stat-row b{
+  display:block; font-family: var(--serif); font-size: 20px; color: var(--accent-2);
+  font-variant-numeric: tabular-nums;
+}
+footer{
+  text-align:center;
+  color: var(--muted-2);
+  font-size: 12px;
+  margin-top: 28px;
+  padding-bottom: 6px;
+}
 </style>
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@500;700&family=Noto+Sans+KR:wght@400;500;600;700&display=swap">
 </head>
 <body>
-<div id="app">
-
-  <header>
-    <div class="brand">✦ 수인중앙교회 · 말씀 이야기</div>
-    <div class="tools">
-      <button class="tool-btn" id="sound-btn" type="button" aria-pressed="false">🔇</button>
-      <button class="tool-btn" id="restart-btn" type="button">↻ 처음</button>
-    </div>
-  </header>
-
-  <div class="meta-row"><span id="progress-label">장면 1 / 4</span><span id="progress-count">0 / 4</span></div>
-  <div id="progress-wrap" role="progressbar" aria-valuemin="0" aria-valuemax="4" aria-valuenow="0"><div id="progress-bar"></div></div>
-
-  <!-- SCENE (reused for 4 scenes) : 링크를 열면 바로 1장이 시작됩니다 -->
-  <section class="screen active" id="screen-puzzle">
-    <div class="scene-art" id="room-art"><span class="tag" id="room-stage"></span><span class="emoji" id="room-emoji"></span></div>
-    <div class="card">
-      <div class="room-tag" id="room-tag"></div>
-      <div class="story" id="room-story"></div>
-      <h2 id="room-q"></h2>
-      <div id="room-options"></div>
-      <div class="feedback" id="room-feedback" aria-live="polite"></div>
-      <button class="btn" id="btn-next" style="display:none;">다음 장면으로 →</button>
-    </div>
-    <div class="keys" id="keys-row"></div>
-  </section>
-
-  <!-- FINAL -->
-  <section class="screen" id="screen-final">
-    <div class="scene-art theme-0"><span class="tag">STORY COMPLETE</span><span class="emoji">🎉</span></div>
-    <div class="card center">
-      <div class="badge">이야기 완성 · 4 / 4</div>
-      <h1>이야기가 완성됐어!</h1>
-    </div>
-    <div class="card">
-      <div class="verse-box" id="verse-box"></div>
-    </div>
-    <div class="card">
-      <h2>💌 선생님께 전하기</h2>
-      <p class="muted" style="margin-bottom:12px;">아래에 적고 제출하면 바로 전달돼요. 심방이나 안부 연락을 받을 수 있어!</p>
-      <label for="final-name">이름 <span style="color:var(--bad);">*필수</span></label>
-      <input type="text" id="final-name" placeholder="이름을 입력해줘">
-      <label for="final-note">오늘 말씀 중 나누고 싶은 것 · 기도제목</label>
-      <textarea id="final-note" placeholder="예: 우리 중고등부 임원들을 위해 기도하고 싶어요"></textarea>
-      <div class="action-row">
-        <button class="btn" id="btn-share" style="margin-top:0;">📤 선생님께 보내기</button>
-      </div>
-      <div class="status-line" id="status-line"></div>
-    </div>
-    <div class="card">
-      <h2>🙏 목사님께 하고 싶은 말 · 기도제목 <span class="muted" style="font-weight:400;font-size:12px;">(선택)</span></h2>
-      <p class="muted" style="margin-bottom:12px;">개인적으로 하고 싶은 말이나 기도제목이 있으면 적어줘. 제출하면 바로 목사님께 전달돼요! (위의 이름 칸에 이름을 적어줘)</p>
-      <textarea id="pastor-note" placeholder="예: 목사님, 오늘 설교 듣고 이런 생각이 들었어요... / 요즘 이런 기도제목이 있어요..."></textarea>
-      <div class="action-row">
-        <button class="btn outline" id="btn-pastor-send" style="margin-top:0;">📨 목사님께 보내기</button>
-      </div>
-      <div class="status-line" id="pastor-status"></div>
-    </div>
-    <footer class="note">수인중앙교회 중고등부 · 261101 설교 기반 선택형 스토리 게임</footer>
-  </section>
-
+<div class="topbar">
+  <div class="brand">
+    <svg viewBox="0 0 24 24" fill="none"><path d="M12 2c-1.5 3-4 5-4 8a4 4 0 0 0 8 0c0-3-2.5-5-4-8Z" fill="currentColor" opacity=".9"/><rect x="10.3" y="15" width="3.4" height="6" rx="1" fill="currentColor" opacity=".6"/></svg>
+    두려움의 방
+  </div>
+  <div class="lock-readout">
+    이사야 <b><span class="lock-digit" id="d-ch1">_</span><span class="lock-digit" id="d-ch2">_</span></b>장
+    <b><span class="lock-digit" id="d-v">_</span></b>절
+  </div>
+  <div class="timer" id="timer">00:00</div>
 </div>
+
+<main>
+
+  <!-- ===================== 0. 인트로 ===================== -->
+  <section class="screen active" id="screen-intro">
+    <div class="room-card intro-wrap">
+      <svg class="intro-lamp" viewBox="0 0 100 100" fill="none">
+        <circle cx="50" cy="42" r="26" fill="url(#g1)"/>
+        <defs>
+          <radialGradient id="g1" cx="40%" cy="35%" r="65%">
+            <stop offset="0%" stop-color="#f6c66b"/>
+            <stop offset="100%" stop-color="#8a5a1e"/>
+          </radialGradient>
+        </defs>
+        <path d="M38 62 L62 62 L58 78 L42 78 Z" fill="#332e3f" stroke="#4a4458"/>
+        <rect x="46" y="78" width="8" height="10" rx="2" fill="#332e3f"/>
+      </svg>
+      <div class="room-eyebrow">중고등부 성경 방탈출</div>
+      <div class="intro-title">두려움의 방</div>
+      <p class="intro-sub">
+        당신은 아무 빛도 없는 방에 갇혀 있습니다. 벽마다 두려움이 적혀 있고,
+        나갈 문은 보이지 않습니다. 하지만 어딘가에 <b style="color:var(--accent-2)">세 개의 열쇠</b>가
+        숨겨져 있다는 소문이 있습니다 — 이사야 43장 1절 속에.
+      </p>
+      <p class="intro-sub">세 열쇠를 모두 찾으면, 자물쇠가 스스로 말해줄 것입니다.</p>
+      <div class="intro-meta">
+        <span>🔑 열쇠 3개</span>
+        <span>⏱ 약 10분</span>
+        <span>📖 이사야 43:1</span>
+      </div>
+      <button class="primary-btn ready" onclick="App.start()">방에 입장하기 →</button>
+    </div>
+  </section>
+
+  <!-- ===================== 1. 창조의 방 ===================== -->
+  <section class="screen" id="screen-1">
+    <div class="room-card">
+      <div class="room-eyebrow">제 1의 방 · 열쇠 1 / 3</div>
+      <div class="room-title">창조의 방</div>
+      <div class="flavor">
+        어두운 선반 위에 금이 간 토기 항아리 하나가 놓여 있습니다. 항아리 겉면에
+        희미하게 새겨진 글자: <b>"너를 지으신 이가 말씀하시느니라"</b>
+        <div class="verse-ref">— 이사야 43:1</div>
+      </div>
+      <div class="question">하나님께서는 우리를 어떤 모습으로 지으셨나요?</div>
+      <div class="options" id="opts-1">
+        <button class="opt-btn" data-correct="0">대충, 있어도 그만 없어도 그만으로</button>
+        <button class="opt-btn" data-correct="1">하나님의 형상을 따라, 가장 아름답게</button>
+        <button class="opt-btn" data-correct="0">다른 사람보다 못하게</button>
+        <button class="opt-btn" data-correct="0">아무 뜻 없이, 실수로</button>
+      </div>
+      <div class="hint" id="hint-1"></div>
+      <div class="key-reveal" id="reveal-1">
+        <div class="key-num">4</div>
+        <div class="key-text">항아리의 금이 사라지고 숫자 <b>4</b>가 떠오릅니다.<br>하나님은 당신을 정성껏, 아름답게 지으셨습니다.</div>
+      </div>
+      <button class="primary-btn" id="next-1" onclick="App.goto(2)">다음 방으로 →</button>
+    </div>
+  </section>
+
+  <!-- ===================== 2. 구속의 방 ===================== -->
+  <section class="screen" id="screen-2">
+    <div class="room-card">
+      <div class="room-eyebrow">제 2의 방 · 열쇠 2 / 3</div>
+      <div class="room-title">구속의 방</div>
+      <div class="flavor">
+        녹슨 쇠사슬에 묶인 낡은 보석함이 보입니다. 함 위에 새겨진 글자:
+        <b>"내가 너를 구속하였고"</b>
+        <div class="verse-ref">— 이사야 43:1</div>
+      </div>
+      <div class="question">성경에서 "구속하다"(redeem)는 어떤 뜻인가요?</div>
+      <div class="options" id="opts-2">
+        <button class="opt-btn" data-correct="0">경찰서에 가두다</button>
+        <button class="opt-btn" data-correct="1">대가를 치르고, 잃어버린 것을 다시 찾다</button>
+        <button class="opt-btn" data-correct="0">완전히 잊어버리다</button>
+        <button class="opt-btn" data-correct="0">조건 없이 포기하다</button>
+      </div>
+      <div class="hint" id="hint-2"></div>
+      <div class="key-reveal" id="reveal-2">
+        <div class="key-num">3</div>
+        <div class="key-text">쇠사슬이 풀리며 숫자 <b>3</b>이 드러납니다.<br>하나님은 우리를 되찾기 위해 자기 아들의 생명이라는 대가를 치르셨습니다.</div>
+      </div>
+      <button class="primary-btn" id="next-2" onclick="App.goto(3)">다음 방으로 →</button>
+    </div>
+  </section>
+
+  <!-- ===================== 3. 지명의 방 ===================== -->
+  <section class="screen" id="screen-3">
+    <div class="room-card">
+      <div class="room-eyebrow">제 3의 방 · 열쇠 3 / 3</div>
+      <div class="room-title">지명의 방</div>
+      <div class="flavor">
+        벽 한가운데 빈 칸이 하나 있습니다. 누군가 말하는 듯합니다:
+        <b>"내가 너를 지명하여 불렀나니"</b> — 당신의 이름을 불러보려는 것 같습니다.
+        <div class="verse-ref">— 이사야 43:1</div>
+      </div>
+
+      <div class="name-row">
+        <input id="name-input" type="text" placeholder="당신의 이름을 적어보세요" maxlength="12">
+        <button onclick="App.sayName()">부르기</button>
+      </div>
+      <div class="personal-line" id="personal-line"></div>
+
+      <div class="question">흩어진 단어를 눌러, 벽에 새겨진 문장을 순서대로 완성하세요.</div>
+      <div class="assembled" id="assembled"></div>
+      <div class="pool" id="pool"></div>
+      <div class="hint" id="hint-3"></div>
+
+      <div class="key-reveal" id="reveal-3">
+        <div class="key-num">1</div>
+        <div class="key-text">벽의 빈 칸에 숫자 <b>1</b>이 새겨집니다.<br>하나님은 당신의 이름을 정확히 아시고, 자신의 것으로 부르셨습니다.</div>
+      </div>
+      <button class="primary-btn" id="next-3" onclick="App.goto(4)">마지막 문으로 →</button>
+    </div>
+  </section>
+
+  <!-- ===================== 4. 결합의 방 ===================== -->
+  <section class="screen" id="screen-4">
+    <div class="room-card">
+      <div class="room-eyebrow">마지막 방</div>
+      <div class="room-title">탈출의 문</div>
+      <div class="flavor">
+        세 방에서 찾은 숫자가 하나의 자물쇠를 이룹니다. 이 숫자는 사실 — 처음부터
+        당신이 찾고 있던 말씀의 <b>주소</b>였습니다.
+      </div>
+      <div class="ref-caption">이사야 ___ 장 ___ 절</div>
+      <div class="lock-dial-row">
+        <div class="dial" id="dial-a"><small>창조</small>·</div>
+        <div class="dial" id="dial-b"><small>구속</small>·</div>
+        <div class="dial" id="dial-c"><small>지명</small>·</div>
+      </div>
+      <button class="primary-btn" id="open-door" onclick="App.openDoor()">자물쇠를 돌려 문을 연다 →</button>
+    </div>
+  </section>
+
+  <!-- ===================== 5. 탈출 완료 ===================== -->
+  <section class="screen" id="screen-5">
+    <div class="room-card">
+      <div class="room-eyebrow">탈출 성공</div>
+      <div class="room-title">너는 내 것이라</div>
+
+      <div class="door-wrap" id="door-wrap">
+        <div class="door-leaf l"></div>
+        <div class="door-leaf r"></div>
+        <div class="door-glow">빛이 방 안으로 쏟아져 들어옵니다</div>
+      </div>
+
+      <div class="final-verse">
+        "너는 두려워하지 말라 <b>내가 너를 구속하였고</b><br>
+        내가 너를 지명하여 불렀나니 <b>너는 내 것이라</b>"
+      </div>
+      <div class="final-ref">이사야 43:1</div>
+
+      <div class="stat-row">
+        <div><b id="final-time">00:00</b>탈출 시간</div>
+        <div><b>3 / 3</b>찾은 열쇠</div>
+      </div>
+
+      <div class="divider"></div>
+      <div class="section-label">오늘, 나에게</div>
+      <p class="reflect-q">나는 평소 나의 가치를 무엇으로 평가하고 있었나요? (성적, 외모, SNS, 관계 등)</p>
+      <p class="reflect-q">"너는 내 것이라"는 말씀을 이번 한 주, 두려운 순간에 어떻게 기억할 수 있을까요?</p>
+      <p class="reflect-q" id="extra-q" style="display:none">주변에 소외되거나 혼자인 것 같은 친구가 있다면, 이번 주 어떻게 다가가 격려해줄 수 있을까요?</p>
+      <button class="more-link" id="more-btn" onclick="App.toggleMore()">질문 한 가지 더 보기 ↓</button>
+
+      <div class="divider"></div>
+      <div class="section-label">선생님께 전하기</div>
+      <p class="deliver-note">오늘 느낀 점이나 나누고 싶은 기도제목을 적으면 선생님께 바로 전달됩니다.</p>
+      <label class="field-label" for="deliver-name">이름</label>
+      <input class="field-input" id="deliver-name" type="text" placeholder="이름을 적어주세요" maxlength="12">
+      <label class="field-label" for="teacher-note">나누고 싶은 이야기 · 기도제목</label>
+      <textarea class="field-textarea" id="teacher-note" placeholder="예: 시험 망쳐도 하나님이 날 사랑하신다는 거 기억하고 싶어요"></textarea>
+      <button class="deliver-btn" onclick="App.sendTo('teacher')">선생님께 보내기</button>
+      <div class="deliver-status" id="teacher-status"></div>
+
+      <div class="divider"></div>
+      <div class="section-label">목사님께 하고 싶은 말 <span style="color:var(--muted-2);font-weight:400;text-transform:none;letter-spacing:0">(선택)</span></div>
+      <textarea class="field-textarea" id="pastor-note" placeholder="예: 목사님, 오늘 말씀 듣고 이런 생각이 들었어요... / 요즘 이런 기도제목이 있어요..."></textarea>
+      <button class="deliver-btn" onclick="App.sendTo('pastor')">목사님께 보내기</button>
+      <div class="deliver-status" id="pastor-status"></div>
+
+      <button class="ghost-btn" onclick="App.reset()">처음부터 다시 탈출하기</button>
+    </div>
+  </section>
+
+</main>
+<footer>이사야 43:1–7 · 261108 중고등부 설교를 바탕으로 제작</footer>
 
 <script>
 (function(){
   "use strict";
 
-  // ============================================================
-  // 매주 바꿔야 할 내용은 이 블록 안에서만 수정하면 됩니다.
-  // ============================================================
-  var VERSE_HTML =
-    '<div><span class="verse-num">1</span>그 때에 제자가 더 많아졌는데 헬라파 유대인들이 자기의 과부들이 매일의 구제에 빠지므로 히브리파 사람을 원망하니</div>' +
-    '<div style="margin-top:10px;"><span class="verse-num">2</span>열두 사도가 모든 제자를 불러 이르되 우리가 하나님의 말씀을 제쳐 놓고 접대를 일삼는 것이 마땅하지 아니하니</div>' +
-    '<div style="margin-top:10px;"><span class="verse-num">3</span>형제들아 너희 가운데서 성령과 지혜가 충만하여 칭찬 받는 사람 일곱을 택하라 우리가 이 일을 그들에게 맡기고</div>' +
-    '<div style="margin-top:10px;"><span class="verse-num">4</span>우리는 오로지 기도하는 일과 말씀 사역에 힘쓰리라 하니</div>' +
-    '<div style="margin-top:10px;"><span class="verse-num">5</span>온 무리가 이 말을 기뻐하여 믿음과 성령이 충만한 사람 스데반과 또 빌립과 브로고로와 니가노르와 디몬과 바메나와 유대교에 입교했던 안디옥 사람 니골라를 택하여</div>' +
-    '<div style="margin-top:10px;"><span class="verse-num">6</span>사도들 앞에 세우니 사도들이 기도하고 그들에게 안수하니라</div>' +
-    '<div style="margin-top:10px;"><span class="verse-num">7</span>하나님의 말씀이 점점 왕성하여 예루살렘에 있는 제자의 수가 더 심히 많아지고 허다한 제사장의 무리도 이 도에 복종하니라</div>' +
-    '<div class="muted" style="margin-top:10px;">— 사도행전 6:1-7</div>';
-
-  var SERMON_DATE = "26년11월1일";
-
-  // 구글 폼으로 바로 제출 — "중고등부 설교 피드백" 폼 연결 정보
+  // ---------- 설교/제출 설정 (매주 교체) ----------
+  var SERMON_DATE = "26년11월08일";
   var FORM_ACTION = "https://docs.google.com/forms/d/e/1FAIpQLSfa4PJcpiJBWsfry2Lo1SUxiwKTtEh_V_AmPQ_6WRwOKeLYGg/formResponse";
   var FORM_ENTRY = {
-    name: "entry.1626522824",      // 이름
-    from: "entry.1380117152",      // 보낸사람 구분 (선생님 / 목사님)
-    content: "entry.1763285252",   // 내용
-    sermonDate: "entry.820953926", // 설교일자
-    submitDate: "entry.112201991"  // 제출일자
+    name: "entry.1626522824",
+    from: "entry.1380117152",
+    content: "entry.1763285252",
+    sermonDate: "entry.820953926",
+    submitDate: "entry.112201991"
   };
 
-  // 선택지의 r = 그 선택을 했을 때 이야기 속에서 일어난 일(오답일 때만 표시)
-  var QUIZ = [
-    {
-      room: "1장 · 예루살렘 교회의 아침",
-      theme: 3, emoji: "🌅",
-      story: "예수님이 승천하신 뒤, 성령님과 함께하는 예루살렘 교회에는 사랑이 넘치고 날마다 사람들이 늘어난다. 너도 그 교회의 성도 중 한 명이다. 그런데 오늘 아침, 매일 나누는 구제에서 빠진 과부들이 있다는 소식이 퍼진다. 광장에서 사람들이 웅성거린다. “우리는 유대인이 아니라서 차별하는 거 아니야?”",
-      q: "너라면 지금 어떻게 하겠어?",
-      options: [
-        {t:"“교회가 일부러 차별하는 거야!” 하며 불만 있는 사람들과 따로 모여 이야기한다", ok:false, r:"불평하는 목소리가 점점 커지고, 교회 안에 편이 갈라지기 시작한다."},
-        {t:"사람이 갑자기 많아져서 손이 닿지 못한 사람이 생긴 거라고 생각하고, 다투기보다 사도들에게 알려서 함께 풀도록 돕는다", ok:true},
-        {t:"내 가족은 구제를 잘 받고 있으니, 괜히 나서지 않고 어떻게 되는지 지켜보기만 한다", ok:false, r:"문제는 그대로 남고, 빠진 과부들은 하루하루 더 외로워진다."},
-        {t:"이 일은 사도들이 전부 직접 해결해야 한다며, 사도들을 찾아가서 따진다", ok:false, r:"사도들은 더 바빠지고, 말씀을 가르치고 기도할 시간은 점점 줄어든다."}
-      ],
-      hint: "설교에서 “사람이 많아지니까 미처 ___ 못한 사람들이 생겼다”고 했어. 이 문제는 누군가의 나쁜 마음 때문일까, 교회가 커지는 과정에서 생긴 빈틈일까?",
-      explain: "교회가 부흥하자 미처 챙기지 못한 사람이 생겼고, 갈등이 터졌어. 사람이 있는 곳에는 언제나 문제가 있지. 중요한 건 불평하며 갈라서는 게 아니라, 문제를 드러내고 함께 풀어 가는 거야. (행 6:1)"
-    },
-    {
-      room: "2장 · 사도들의 회의",
-      theme: 2, emoji: "🤝",
-      story: "사도들이 모든 제자를 불러 모았다. “우리가 하나님의 말씀을 제쳐 놓고 접대를 일삼는 것은 마땅하지 않습니다.” 가난한 사람을 돌보는 일도, 말씀을 가르치고 기도하는 일도 모두 소중하다. 사도들이 해결 방법을 내놓는다.",
-      q: "너라면 어떤 의견에 손을 들겠어?",
-      options: [
-        {t:"사도들이 구제를 전부 맡고, 말씀을 전하는 일은 당분간 쉰다", ok:false, r:"구제는 잘 되지만, 말씀을 가르치고 기도해 줄 사람이 사라져 버린다."},
-        {t:"구제는 교회의 중요한 일이 아니니 이제 그만둔다", ok:false, r:"도움이 끊긴 과부들은 훨씬 더 힘든 날을 보내게 된다."},
-        {t:"사도들은 기도와 말씀 전하는 일에 집중하고, 구제와 섬김은 성도들이 뽑은 일꾼들이 맡는다", ok:true},
-        {t:"사도들이 믿을 만한 일곱 명을 직접 골라 임명하고, 성도들은 따르기만 한다", ok:false, r:"일은 빨리 정해지지만, 성도들은 ‘우리가 세운 일꾼’이라는 마음을 갖기 어렵다."}
-      ],
-      hint: "4절을 떠올려 봐. “우리는 오로지 ___하는 일과 말씀 사역에 힘쓰리라.” 그리고 일곱 사람을 누가 택했는지도 기억해 봐!",
-      explain: "사도들은 교회의 모든 일을 혼자 다 돌볼 수 없다는 걸 알았어. 그래서 말씀과 기도에 집중하고, 구제와 섬김은 일꾼(집사)을 세워 맡겼지. 그리고 누구를 세울지는 사도들이 아니라 온 무리, 곧 성도들이 함께 택했어. (행 6:2-5)"
-    },
-    {
-      room: "3장 · 일곱 사람을 뽑는 날",
-      theme: 1, emoji: "🗳️",
-      story: "이제 성도들이 일곱 사람을 뽑을 차례다. 광장에 후보들이 모였다. 말솜씨가 뛰어난 사람, 재산이 많은 사람, 나와 가장 친한 친구, 그리고 조용히 사람들을 섬겨 온 사람이 있다. 이제 너의 한 표를 던질 차례다.",
-      q: "너의 한 표는 누구에게 갈까?",
-      options: [
-        {t:"말을 제일 잘하고 인기가 많아서, 우리 이야기를 잘 들어줄 것 같은 사람", ok:false, r:"인기는 많지만, 정작 꼭 필요한 섬김은 뒤로 밀리고 만다."},
-        {t:"재산이 많아서 교회에 큰 도움이 될 것 같은 사람", ok:false, r:"도움은 되겠지만, 믿음으로 섬기는 마음까지 있는지는 알 수 없다."},
-        {t:"나와 가장 친해서 나를 편하게 해 줄 것 같은 사람", ok:false, r:"나에게는 편하겠지만, 공동체 전체를 섬길 사람인지는 알 수 없다."},
-        {t:"믿음과 성령이 충만해서, 함께 예수님을 잘 믿도록 섬길 것이라고 칭찬받는 사람", ok:true}
-      ],
-      hint: "3절의 기준을 떠올려 봐. “성령과 ___가 충만하여 칭찬 받는 사람.” 5절에서는 “믿음과 성령이 충만한 사람”이라고 했어.",
-      explain: "교회 리더의 기준은 인기도, 재산도, 친한 정도도, 나의 이익도 아니야. 믿음과 성령이 충만해서 함께 예수님을 잘 믿도록 섬길 사람이어야 해. 이런 사람들이 세워지자 하나님의 말씀이 점점 왕성해지고 제자의 수가 많아졌어. (행 6:3-7)"
-    },
-    {
-      room: "4장 · 오늘, 우리 학생 총회",
-      theme: 4, emoji: "📋",
-      story: "이야기에서 빠져나와 오늘의 너로 돌아온다. 이번 주일 공과 시간에는 학생 총회가 있다. 한 해 동안 중고등부가 어떻게 운영되어 왔는지 돌아보고, 내년에 중고등부를 섬길 임원을 뽑는 시간이다. 투표용지를 받은 너는 오늘 말씀을 떠올려 본다.",
-      q: "오늘 말씀에 비추어, 투표하는 나와 뽑힌 임원이 가져야 할 태도는?",
-      options: [
-        {t:"나 대신 열심히 일해 줄 사람을 뽑고, 뽑은 뒤에는 임원들이 알아서 잘하겠지 하고 맡겨 둔다. 뽑힌 임원은 맡은 일만 해내면 충분하다", ok:false, r:"임원들만 지치고, 중고등부는 함께 자라지 못한다."},
-        {t:"나와 함께 예수님을 잘 믿도록 섬길 사람을 뽑고, 뽑은 뒤에도 협조하며 기도한다. 뽑힌 임원은 하나님이 세우셨다는 마음으로 하나님을 알기에 힘쓴다", ok:true},
-        {t:"세상 선거처럼 우리 반이나 친한 친구들에게 이익이 될 사람을 뽑고, 뽑힌 임원은 그 기대에 맞추려고 애쓴다", ok:false, r:"공동체가 편으로 나뉘고, 예수님을 따르는 일은 뒷전이 된다."},
-        {t:"투표할 때는 인기 있는 사람을 뽑고, 뽑힌 임원은 높은 자리에 올랐으니 친구들이 잘 따라 주길 기대한다", ok:false, r:"섬김이 아니라 자리가 목적이 되어 버린다."}
-      ],
-      hint: "설교에서 “오늘 투표하는 사람들은 나 ___ 일해 줄 사람을 뽑는 게 아니라, 나와 ___ 예수님을 잘 믿도록 섬길 수 있는 사람을 뽑는 시간”이라고 했어.",
-      explain: "투표는 누가 나를 편하게 해 줄지 고르는 일이 아니야. 함께 예수님을 믿고 섬길 사람을 세우는 일이지. 뽑은 뒤에도 서로 협조하고 기도해야 하고, 뽑힌 사람은 ‘하나님이 공동체를 통해 나를 세우셨구나’ 하는 마음으로 한 해 동안 하나님을 알기에 힘써야 해."
-    }
-  ];
-  // ============================================================
-  // 여기까지가 매주 교체하는 블록입니다.
-  // ============================================================
+  var WORDS_SHUFFLED = ["것이라","두려워하지","너는","말라","내"];
+  var WORDS_CORRECT   = ["두려워하지","말라","너는","내","것이라"];
 
-  var state = { step:0, solved:0, muted:true };
-  var audioCtx = null;
+  var state = {
+    stage: 0,           // 0=인트로,1-3=방,4=결합,5=완료
+    keys: [false,false,false],
+    startedAt: null,
+    finishedAt: null,
+    assembled: [],
+    poolUsed: [],
+    playerName: ""
+  };
+  var timerHandle = null;
 
   function $(id){ return document.getElementById(id); }
 
-  function showScreen(id){
-    document.querySelectorAll(".screen").forEach(function(s){ s.classList.remove("active"); });
-    $(id).classList.add("active");
-    try{ window.scrollTo(0,0); }catch(e){}
+  function fmt(sec){
+    var m = Math.floor(sec/60), s = sec%60;
+    return (m<10?"0":"")+m+":"+(s<10?"0":"")+s;
   }
 
-  function setProgress(){
-    $("progress-label").textContent = state.step >= QUIZ.length ? "이야기 완성!" : ("장면 " + (state.step+1) + " / 4");
-    $("progress-count").textContent = state.solved + " / 4";
-    $("progress-bar").style.width = Math.round((state.solved/4)*100) + "%";
-    $("progress-wrap").setAttribute("aria-valuenow", String(state.solved));
+  function tick(){
+    if(!state.startedAt) return;
+    var sec = Math.floor((Date.now()-state.startedAt)/1000);
+    $("timer").textContent = fmt(sec);
   }
 
-  // ---------- sound ----------
-  function ensureAudio(){
-    if (!audioCtx){
-      try{ audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
-      catch(e){ audioCtx = null; }
-    }
-    if (audioCtx && audioCtx.state === "suspended"){ audioCtx.resume(); }
-  }
-  function playTone(freq, start, dur, type){
-    if (state.muted || !audioCtx) return;
-    try{
-      var osc = audioCtx.createOscillator(); var gain = audioCtx.createGain();
-      osc.type = type || "sine"; osc.frequency.value = freq;
-      gain.gain.setValueAtTime(0.0001, audioCtx.currentTime + start);
-      gain.gain.exponentialRampToValueAtTime(0.18, audioCtx.currentTime + start + 0.02);
-      gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + start + dur);
-      osc.connect(gain).connect(audioCtx.destination);
-      osc.start(audioCtx.currentTime + start);
-      osc.stop(audioCtx.currentTime + start + dur + 0.02);
-    }catch(e){}
-  }
-  function successSound(){ playTone(523,0,.12,"sine"); playTone(659,.12,.12,"sine"); playTone(784,.24,.22,"sine"); }
-  function failSound(){ playTone(160,0,.18,"sawtooth"); }
-
-  function updateSoundBtn(){
-    $("sound-btn").textContent = state.muted ? "🔇" : "🔊";
-    $("sound-btn").setAttribute("aria-pressed", String(!state.muted));
-  }
-  function loadMuted(){
-    try{ state.muted = localStorage.getItem("bible_escape_muted") !== "0"; }catch(e){ state.muted = true; }
-    updateSoundBtn();
-  }
-  function toggleMuted(){
-    ensureAudio();
-    state.muted = !state.muted;
-    updateSoundBtn();
-    try{ localStorage.setItem("bible_escape_muted", state.muted ? "1" : "0"); }catch(e){}
-    if (!state.muted) successSound();
+  function updateLockReadout(){
+    $("d-ch1").textContent = state.keys[0] ? "4" : "_";
+    $("d-ch1").classList.toggle("lit", state.keys[0]);
+    $("d-ch2").textContent = state.keys[1] ? "3" : "_";
+    $("d-ch2").classList.toggle("lit", state.keys[1]);
+    $("d-v").textContent = state.keys[2] ? "1" : "_";
+    $("d-v").classList.toggle("lit", state.keys[2]);
   }
 
-  // ---------- 진행 표시 ----------
-  function renderKeys(){
-    var row = $("keys-row"); row.innerHTML = "";
-    for (var i=0;i<QUIZ.length;i++){
-      var k = document.createElement("div");
-      k.className = "key" + (i < state.solved ? " got" : "");
-      k.textContent = i < state.solved ? "📜" : "○";
-      row.appendChild(k);
-    }
+  function showScreen(n){
+    document.querySelectorAll(".screen").forEach(function(el){ el.classList.remove("active"); });
+    var map = {0:"screen-intro",1:"screen-1",2:"screen-2",3:"screen-3",4:"screen-4",5:"screen-5"};
+    $(map[n]).classList.add("active");
+    window.scrollTo({top:0, behavior:"smooth"});
   }
 
-  // ---------- 장면 ----------
-  function renderRoom(idx){
-    var room = QUIZ[idx];
-    $("room-art").className = "scene-art theme-" + room.theme;
-    $("room-stage").textContent = "장면 " + (idx+1) + " / 4";
-    $("room-emoji").textContent = room.emoji;
-    $("room-tag").textContent = room.room;
-    $("room-story").textContent = room.story;
-    $("room-q").textContent = room.q;
-    $("btn-next").style.display = "none";
-    $("btn-next").textContent = (idx === QUIZ.length - 1) ? "이야기 마무리하기 →" : "다음 장면으로 →";
-
-    var fb = $("room-feedback"); fb.className = "feedback"; fb.innerHTML = "";
-
-    var wrap = $("room-options"); wrap.innerHTML = "";
-    room.options.forEach(function(opt){
-      var b = document.createElement("button");
-      b.type = "button"; b.className = "option"; b.textContent = opt.t;
-      b.addEventListener("click", function(){ handleAnswer(b, opt, room); });
-      wrap.appendChild(b);
+  function wireOptions(stageId, keyIndex){
+    var wrap = $("opts-"+stageId);
+    var btns = wrap.querySelectorAll(".opt-btn");
+    btns.forEach(function(btn){
+      btn.addEventListener("click", function(){
+        if(wrap.dataset.solved) return;
+        if(btn.dataset.correct === "1"){
+          wrap.dataset.solved = "1";
+          btn.classList.add("correct");
+          btns.forEach(function(b){ if(b!==btn) b.disabled = true; });
+          btn.disabled = true;
+          $("hint-"+stageId).textContent = "";
+          state.keys[keyIndex] = true;
+          updateLockReadout();
+          $("reveal-"+stageId).classList.add("show");
+          $("next-"+stageId).classList.add("ready");
+        } else {
+          btn.classList.add("wrong");
+          setTimeout(function(){ btn.classList.remove("wrong"); }, 420);
+          $("hint-"+stageId).textContent = "다시 한 번 본문을 떠올려 보세요.";
+        }
+      });
     });
-
-    renderKeys();
-    setProgress();
-    showScreen("screen-puzzle");
   }
 
-  function handleAnswer(btn, opt, room){
-    ensureAudio();
-    var fb = $("room-feedback");
-    if (opt.ok){
-      successSound();
-      btn.classList.add("correct");
-      document.querySelectorAll("#room-options .option").forEach(function(o){ o.disabled = true; });
-      fb.className = "feedback ok show";
-      fb.innerHTML = "<b>좋은 선택이야! ✨ 이야기가 이어져</b><br>" + room.explain;
-      $("btn-next").style.display = "block";
-      state.solved++;
-      setProgress();
-      renderKeys();
+  function renderPool(){
+    var pool = $("pool");
+    pool.innerHTML = "";
+    WORDS_SHUFFLED.forEach(function(w, i){
+      if(state.poolUsed.indexOf(i) !== -1) return;
+      var chip = document.createElement("button");
+      chip.className = "word-chip";
+      chip.type = "button";
+      chip.textContent = w;
+      chip.addEventListener("click", function(){
+        state.poolUsed.push(i);
+        state.assembled.push(w);
+        renderPool();
+        renderAssembled();
+        checkSentence();
+      });
+      pool.appendChild(chip);
+    });
+  }
+
+  function renderAssembled(){
+    var row = $("assembled");
+    row.innerHTML = "";
+    state.assembled.forEach(function(w, idx){
+      var chip = document.createElement("button");
+      chip.className = "word-chip placed";
+      chip.type = "button";
+      chip.textContent = w;
+      chip.addEventListener("click", function(){
+        var i = WORDS_SHUFFLED.indexOf(w);
+        var pos = -1;
+        for(var k=state.poolUsed.length-1;k>=0;k--){
+          if(WORDS_SHUFFLED[state.poolUsed[k]] === w){ pos = k; break; }
+        }
+        if(pos !== -1) state.poolUsed.splice(pos,1);
+        state.assembled.splice(idx,1);
+        renderPool();
+        renderAssembled();
+      });
+      row.appendChild(chip);
+    });
+  }
+
+  function checkSentence(){
+    if(state.assembled.length !== WORDS_CORRECT.length) return;
+    var ok = state.assembled.every(function(w,i){ return w === WORDS_CORRECT[i]; });
+    if(ok){
+      $("hint-3").textContent = "";
+      state.keys[2] = true;
+      updateLockReadout();
+      $("reveal-3").classList.add("show");
+      $("next-3").classList.add("ready");
+      document.querySelectorAll("#assembled .word-chip, #pool .word-chip").forEach(function(c){ c.disabled = true; });
     } else {
-      failSound();
-      btn.classList.add("wrong");
-      setTimeout(function(){ btn.classList.remove("wrong"); }, 500);
-      var result = opt.r ? ("<b>이야기가 이렇게 흘러갔어 📖</b><br>" + opt.r + "<br><br>") : "";
-      fb.className = "feedback hint show";
-      fb.innerHTML = result + "<b>다시 생각해볼까? 💡</b><br>" + room.hint;
+      $("hint-3").textContent = "순서가 맞지 않습니다. 단어를 다시 눌러 되돌리고 시도해 보세요.";
+      setTimeout(function(){
+        $("assembled").style.animation = "shake .4s";
+        setTimeout(function(){ $("assembled").style.animation = ""; }, 420);
+      }, 10);
     }
   }
 
-  function nextRoom(){
-    state.step++;
-    if (state.step < QUIZ.length){ renderRoom(state.step); }
-    else { goFinal(); }
-  }
-
-  function goFinal(){
-    state.step = QUIZ.length; state.solved = QUIZ.length; setProgress();
-    $("verse-box").innerHTML = VERSE_HTML;
-    $("status-line").textContent = "";
-    showScreen("screen-final");
-  }
-
-  function resetGame(ask){
-    if (ask && state.step < QUIZ.length && state.solved > 0){
-      if (!window.confirm("처음부터 다시 시작할까? 지금까지의 진행은 초기화돼.")) return;
-    }
-    state.step = 0; state.solved = 0;
-    $("final-name").value = ""; $("final-note").value = ""; $("pastor-note").value = "";
-    $("status-line").textContent = ""; $("pastor-status").textContent = "";
-    renderRoom(0);
-  }
-
-  // ---------- 구글 폼으로 조용히 제출 ----------
+  // ---------- 선생님/목사님께 전달 ----------
   function nowKST(){
     try{ return new Date().toLocaleString("ko-KR", { timeZone: "Asia/Seoul" }); }
     catch(e){ return new Date().toString(); }
@@ -417,85 +933,116 @@
       body: body.toString()
     });
   }
-  async function copyText(text){
-    try{
-      if (navigator.clipboard && window.isSecureContext){ await navigator.clipboard.writeText(text); return true; }
-    }catch(e){}
-    try{
-      var ta = document.createElement("textarea");
-      ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
-      document.body.appendChild(ta); ta.select();
-      var ok = document.execCommand("copy"); ta.remove();
-      return ok;
-    }catch(e){ return false; }
-  }
-  function setStatus(msg){ $("status-line").textContent = msg; }
-
-  async function shareMessage(){
-    var name = $("final-name").value.trim();
-    if (!name){
-      setStatus("이름을 먼저 적어줘!");
-      $("final-name").focus();
-      return;
-    }
-    var note = $("final-note").value.trim();
-    if (!note){
-      setStatus("선생님께 전하고 싶은 말이나 기도제목을 적어주면 보내드릴게!");
-      $("final-note").focus();
-      return;
-    }
-    var btn = $("btn-share");
-    btn.disabled = true;
-    setStatus("보내는 중...");
-    try{
-      await submitToSheet("선생님", name, note);
-      setStatus("✅ 선생님께 전달했어요! 확인하시고 연락 주실 거예요.");
-    }catch(e){
-      var ok = await copyText("[선생님께] " + name + "\n" + note);
-      setStatus(ok ? "전송에 실패했어요(네트워크 확인). 대신 복사했으니 직접 전해줘 📋" : "전송에 실패했어요. 와이파이/데이터 연결을 확인하고 다시 눌러줘.");
-    }
-    btn.disabled = false;
-  }
-  async function sendToPastor(){
-    var name = $("final-name").value.trim();
-    if (!name){
-      $("pastor-status").textContent = "위의 이름 칸에 이름을 먼저 적어줘!";
-      $("final-name").focus();
-      return;
-    }
-    var note = $("pastor-note").value.trim();
-    if (!note){
-      $("pastor-status").textContent = "목사님께 전하고 싶은 말이나 기도제목을 적어주면 보내드릴게!";
-      $("pastor-note").focus();
-      return;
-    }
-    var btn = $("btn-pastor-send");
-    btn.disabled = true;
-    $("pastor-status").textContent = "보내는 중...";
-    try{
-      await submitToSheet("목사님", name, note);
-      $("pastor-status").textContent = "✅ 목사님께 전달했어요! 확인하시고 연락 주실 거예요.";
-    }catch(e){
-      var ok = await copyText("[목사님께] " + name + "\n" + note);
-      $("pastor-status").textContent = ok ? "전송에 실패했어요(네트워크 확인). 대신 복사했으니 직접 전해줘 📋" : "전송에 실패했어요. 와이파이/데이터 연결을 확인하고 다시 눌러줘.";
-    }
-    btn.disabled = false;
+  function copyText(text){
+    return new Promise(function(resolve){
+      if(navigator.clipboard && window.isSecureContext){
+        navigator.clipboard.writeText(text).then(function(){ resolve(true); }).catch(function(){ resolve(false); });
+        return;
+      }
+      try{
+        var ta = document.createElement("textarea");
+        ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+        document.body.appendChild(ta); ta.select();
+        var ok = document.execCommand("copy"); ta.remove();
+        resolve(ok);
+      }catch(e){ resolve(false); }
+    });
   }
 
-  // ---------- init ----------
-  function init(){
-    loadMuted();
+  var App = {
+    start: function(){
+      state.startedAt = Date.now();
+      timerHandle = setInterval(tick, 1000);
+      this.goto(1);
+    },
+    goto: function(n){
+      state.stage = n;
+      showScreen(n);
+      if(n===4) this.renderDials();
+    },
+    sayName: function(){
+      var v = $("name-input").value.trim();
+      if(v) state.playerName = v;
+      var line = $("personal-line");
+      line.textContent = (v || "그대") + "아, 너는 내 것이라.";
+      line.classList.add("show");
+    },
+    renderDials: function(){
+      $("dial-a").innerHTML = '<small>창조</small>' + (state.keys[0] ? "4" : "?");
+      $("dial-a").classList.toggle("filled", state.keys[0]);
+      $("dial-b").innerHTML = '<small>구속</small>' + (state.keys[1] ? "3" : "?");
+      $("dial-b").classList.toggle("filled", state.keys[1]);
+      $("dial-c").innerHTML = '<small>지명</small>' + (state.keys[2] ? "1" : "?");
+      $("dial-c").classList.toggle("filled", state.keys[2]);
+      $("open-door").classList.toggle("ready", state.keys.every(Boolean));
+    },
+    openDoor: function(){
+      if(!state.keys.every(Boolean)) return;
+      state.finishedAt = Date.now();
+      if(timerHandle) clearInterval(timerHandle);
+      var sec = Math.max(0, Math.floor((state.finishedAt-state.startedAt)/1000));
+      $("final-time").textContent = fmt(sec);
+      this.goto(5);
+      var dw = $("door-wrap");
+      setTimeout(function(){ dw.classList.add("open"); }, 250);
+      var nameEl = $("deliver-name");
+      if(nameEl && !nameEl.value.trim() && state.playerName) nameEl.value = state.playerName;
+    },
+    toggleMore: function(){
+      var q = $("extra-q"), btn = $("more-btn");
+      var show = q.style.display === "none";
+      q.style.display = show ? "block" : "none";
+      btn.textContent = show ? "질문 접기 ↑" : "질문 한 가지 더 보기 ↓";
+    },
+    sendTo: function(target){
+      var isTeacher = target === "teacher";
+      var statusEl = $(isTeacher ? "teacher-status" : "pastor-status");
+      var noteEl = $(isTeacher ? "teacher-note" : "pastor-note");
+      var name = ($("deliver-name") ? $("deliver-name").value.trim() : "") || state.playerName || "";
+      var note = noteEl.value.trim();
 
-    $("sound-btn").addEventListener("click", toggleMuted);
-    $("restart-btn").addEventListener("click", function(){ resetGame(true); });
-    $("btn-next").addEventListener("click", nextRoom);
-    $("btn-share").addEventListener("click", shareMessage);
-    $("btn-pastor-send").addEventListener("click", sendToPastor);
+      if(!name){
+        statusEl.textContent = "이름을 먼저 적어주세요.";
+        $("deliver-name").focus();
+        return;
+      }
+      if(!note){
+        statusEl.textContent = (isTeacher ? "선생님" : "목사님") + "께 전하고 싶은 말이나 기도제목을 적어주면 보내드릴게!";
+        noteEl.focus();
+        return;
+      }
 
-    renderRoom(0);
+      statusEl.textContent = "보내는 중...";
+      submitToSheet(isTeacher ? "선생님" : "목사님", name, note)
+        .then(function(){
+          statusEl.textContent = "✅ " + (isTeacher ? "선생님" : "목사님") + "께 전달했어요! 확인하시고 연락 주실 거예요.";
+          noteEl.value = "";
+        })
+        .catch(function(){
+          copyText("[" + (isTeacher ? "선생님" : "목사님") + "께] " + name + "\n" + note).then(function(ok){
+            statusEl.textContent = ok
+              ? "전송에 실패했어요(네트워크 확인). 대신 복사했으니 직접 전해줘 📋"
+              : "전송에 실패했어요. 와이파이/데이터 연결을 확인하고 다시 눌러줘.";
+          });
+        });
+    },
+    reset: function(){
+      location.reload();
+    }
+  };
+  window.App = App;
+
+  // 링크를 열 때마다 항상 새 게임으로 시작 — 진행 상태를 저장하지 않음
+  function boot(){
+    wireOptions(1, 0);
+    wireOptions(2, 1);
+    renderPool();
+    renderAssembled();
+    updateLockReadout();
+    showScreen(0);
   }
 
-  document.addEventListener("DOMContentLoaded", init);
+  boot();
 })();
 </script>
 </body>
