@@ -760,15 +760,13 @@ footer{
       <div class="divider"></div>
       <div class="section-label">선생님께 전하기</div>
       <p class="deliver-note">오늘 느낀 점이나 나누고 싶은 기도제목을 적으면 선생님께 바로 전달됩니다.</p>
-      <label class="field-label" for="deliver-name">이름</label>
-      <input class="field-input" id="deliver-name" type="text" placeholder="이름을 적어주세요" maxlength="12">
       <label class="field-label" for="teacher-note">나누고 싶은 이야기 · 기도제목</label>
       <textarea class="field-textarea" id="teacher-note" placeholder="예: 시험 망쳐도 하나님이 날 사랑하신다는 거 기억하고 싶어요"></textarea>
       <button class="deliver-btn" onclick="App.sendTo('teacher')">선생님께 보내기</button>
       <div class="deliver-status" id="teacher-status" aria-live="polite"></div>
 
       <div class="divider"></div>
-      <div class="section-label">목사님께 하고 싶은 말 <span style="color:var(--muted-2);font-weight:400;text-transform:none;letter-spacing:0">(선택)</span></div>
+      <div class="section-label">목사님께 하고 싶은 말</div>
       <textarea class="field-textarea" id="pastor-note" placeholder="예: 목사님, 오늘 말씀 듣고 이런 생각이 들었어요... / 요즘 이런 기도제목이 있어요..."></textarea>
       <button class="deliver-btn" onclick="App.sendTo('pastor')">목사님께 보내기</button>
       <div class="deliver-status" id="pastor-status" aria-live="polite"></div>
@@ -996,8 +994,6 @@ footer{
       this.goto(5);
       var dw = $("door-wrap");
       setTimeout(function(){ dw.classList.add("open"); }, 250);
-      var nameEl = $("deliver-name");
-      if(nameEl && !nameEl.value.trim() && state.playerName) nameEl.value = state.playerName;
     },
     toggleMore: function(){
       var q = $("extra-q"), btn = $("more-btn");
@@ -1009,14 +1005,9 @@ footer{
       var isTeacher = target === "teacher";
       var statusEl = $(isTeacher ? "teacher-status" : "pastor-status");
       var noteEl = $(isTeacher ? "teacher-note" : "pastor-note");
-      var name = ($("deliver-name") ? $("deliver-name").value.trim() : "") || state.playerName || "";
+      var name = state.playerName.trim() || "이름 없음";
       var note = noteEl.value.trim();
 
-      if(!name){
-        statusEl.textContent = "이름을 먼저 적어주세요.";
-        $("deliver-name").focus();
-        return;
-      }
       if(!note){
         statusEl.textContent = (isTeacher ? "선생님" : "목사님") + "께 전하고 싶은 말이나 기도제목을 적어주면 보내드릴게!";
         noteEl.focus();
