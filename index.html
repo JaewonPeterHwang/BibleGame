@@ -834,7 +834,7 @@ footer{
     var ready = state.keys[2] && !!state.playerName.trim();
     $("next-3").classList.toggle("ready", ready);
     if(state.keys[2] && !state.playerName.trim()){
-      $("hint-3").textContent = "다음 방으로 가려면 이름을 꼭 적어주세요.";
+      $("hint-3").textContent = "이름을 넣고 부르기 버튼을 눌러주세요.";
     } else if(ready){
       $("hint-3").textContent = "";
     }
