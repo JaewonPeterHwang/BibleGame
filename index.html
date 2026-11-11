@@ -703,6 +703,8 @@ footer{
       <div id="reply-check-panel" style="display:none; margin-top:14px; text-align:left">
         <label class="field-label" for="reply-name-input">이름</label>
         <input class="field-input" id="reply-name-input" type="text" placeholder="내 이름을 정확히 입력해주세요" maxlength="12">
+        <label class="field-label" for="reply-pin-input">확인 번호 (4자리)</label>
+        <input class="field-input" id="reply-pin-input" type="text" inputmode="numeric" maxlength="4" placeholder="보낼 때 입력했던 4자리 번호 (예전 글은 비워두세요)">
         <button class="deliver-btn" onclick="App.checkReply()">답장 확인</button>
         <div class="deliver-status" id="reply-status" aria-live="polite"></div>
         <div id="reply-chat" class="chat-wrap" style="display:none" aria-live="polite"></div>
@@ -875,6 +877,8 @@ footer{
       <div class="divider"></div>
       <div class="section-label">목사님께 하고 싶은 말 · 기도제목</div>
       <textarea class="field-textarea" id="pastor-note" placeholder="예: 목사님, 오늘 말씀 듣고 이런 생각이 들었어요... / 요즘 이런 기도제목이 있어요..."></textarea>
+      <label class="field-label" for="pastor-pin-input">답장 확인 번호 (선택, 4자리)</label>
+      <input class="field-input" id="pastor-pin-input" type="text" inputmode="numeric" maxlength="4" placeholder="나중에 답장을 확인하고 싶으면 숫자 4자리를 입력하세요">
       <button class="deliver-btn" onclick="App.sendTo('pastor')">목사님께 보내기</button>
       <div class="deliver-status" id="pastor-status" aria-live="polite"></div>
 
@@ -1096,11 +1100,17 @@ footer{
     row.appendChild(bubble);
     return row;
   }
+  // 혹시 서버 쪽에 [PIN:1234] 표시가 그대로 남아있어도, 화면에는 절대 보이지 않도록 한 번 더 걸러줌
+  function stripPinMarker(text){
+    if(!text) return text;
+    return text.replace(/\[PIN:\d{4}\]/g, "").replace(/\s+/g, " ").trim();
+  }
   function renderReplyChat(content, reply){
     var chatEl = $("reply-chat");
     chatEl.innerHTML = "";
-    if(content){
-      chatEl.appendChild(buildChatRow("mine", "내가 보낸 말", content));
+    var cleanContent = stripPinMarker(content);
+    if(cleanContent){
+      chatEl.appendChild(buildChatRow("mine", "내가 보낸 말", cleanContent));
     }
     chatEl.appendChild(buildChatRow("reply", "목사님 답장", reply));
     chatEl.style.display = "flex";
@@ -1162,6 +1172,7 @@ footer{
       var name = state.playerName.trim() || "이름 없음";
       var note = noteEl.value.trim();
       var className = "";
+      var pin = "";
 
       if(isTeacher && FORM_ENTRY.classField){
         className = $("class-select").value;
@@ -1178,11 +1189,30 @@ footer{
         return;
       }
 
+      // 목사님께 보낼 때만: 답장 확인용 4자리 번호(선택). 적지 않으면 나중에 답장을 확인할 수 없음.
+      var pinEl = null;
+      if(!isTeacher){
+        pinEl = $("pastor-pin-input");
+        pin = pinEl.value.trim();
+        if(pin && !/^[0-9]{4}$/.test(pin)){
+          statusEl.textContent = "답장 확인 번호는 숫자 4자리로 입력해주세요.";
+          pinEl.focus();
+          return;
+        }
+      }
+
+      var sendContent = (!isTeacher && pin) ? (note + "\n[PIN:" + pin + "]") : note;
+
       statusEl.textContent = "보내는 중...";
-      submitToSheet(isTeacher ? "선생님" : "목사님", name, note, className)
+      submitToSheet(isTeacher ? "선생님" : "목사님", name, sendContent, className)
         .then(function(){
-          statusEl.textContent = "✅ " + (isTeacher ? "선생님" : "목사님") + "께 전달했어요! 확인하시고 연락 주실 거예요.";
+          var doneMsg = "✅ " + (isTeacher ? "선생님" : "목사님") + "께 전달했어요! ";
+          doneMsg += (!isTeacher && pin)
+            ? "답장은 '" + pin + "' 번호로 확인할 수 있어요."
+            : "확인하시고 연락 주실 거예요.";
+          statusEl.textContent = doneMsg;
           noteEl.value = "";
+          if(pinEl) pinEl.value = "";
         })
         .catch(function(){
           copyText("[" + (isTeacher ? "선생님" : "목사님") + "께] " + name + "\n" + note).then(function(ok){
@@ -1200,6 +1230,7 @@ footer{
     },
     checkReply: function(){
       var name = $("reply-name-input").value.trim();
+      var pin = $("reply-pin-input").value.trim();
       var statusEl = $("reply-status");
       var chatEl = $("reply-chat");
       chatEl.style.display = "none";
@@ -1208,19 +1239,23 @@ footer{
         statusEl.textContent = "이름을 입력해주세요.";
         return;
       }
+      if(pin && !/^[0-9]{4}$/.test(pin)){
+        statusEl.textContent = "확인 번호는 숫자 4자리로 입력해주세요.";
+        return;
+      }
       if(!REPLY_LOOKUP_URL){
         statusEl.textContent = "아직 답장 확인 기능이 준비 중입니다.";
         return;
       }
       statusEl.textContent = "확인하는 중...";
-      fetch(REPLY_LOOKUP_URL + "?name=" + encodeURIComponent(name))
+      fetch(REPLY_LOOKUP_URL + "?name=" + encodeURIComponent(name) + "&pin=" + encodeURIComponent(pin))
         .then(function(r){ return r.json(); })
         .then(function(data){
           if(data && data.found){
             statusEl.textContent = "";
             renderReplyChat(data.content, data.reply);
           } else {
-            statusEl.textContent = "아직 답장이 없습니다. 조금 더 기다려주세요.";
+            statusEl.textContent = "이름 또는 번호가 일치하지 않거나, 아직 답장이 없습니다.";
           }
         })
         .catch(function(){
