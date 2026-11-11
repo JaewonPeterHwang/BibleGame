@@ -1273,8 +1273,10 @@ footer{
           if(data && data.found && data.items && data.items.length){
             statusEl.textContent = "";
             renderReplyChat(data.items);
+          } else if(data && data.matched){
+            statusEl.textContent = "아직 답장이 없습니다. 조금만 기다려 주세요.";
           } else {
-            statusEl.textContent = "이름 또는 번호가 일치하지 않거나, 아직 답장이 없습니다.";
+            statusEl.textContent = "이름 또는 번호가 일치하지 않습니다.";
           }
         })
         .catch(function(){
