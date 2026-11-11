@@ -317,6 +317,15 @@ main{
   gap:14px;
   margin-top:14px;
 }
+.chat-date{
+  align-self:center;
+  font-size:11px;
+  color: var(--muted-2);
+  background: var(--inset);
+  padding:3px 11px;
+  border-radius:10px;
+  margin: 6px 0 0;
+}
 .chat-row{ display:flex; flex-direction:column; max-width:100%; }
 .chat-row.mine{ align-items:flex-end; }
 .chat-row.reply{ align-items:flex-start; }
@@ -1105,14 +1114,24 @@ footer{
     if(!text) return text;
     return text.replace(/\[PIN:\d{4}\]/g, "").replace(/\s+/g, " ").trim();
   }
-  function renderReplyChat(content, reply){
+  function buildDateDivider(dateText){
+    var d = document.createElement("div");
+    d.className = "chat-date";
+    d.textContent = dateText;
+    return d;
+  }
+  // 지금까지 주고받은 대화 전부(items)를 과거→최신 순서로 쌓아서, 카톡처럼 한 화면에서 보게 함
+  function renderReplyChat(items){
     var chatEl = $("reply-chat");
     chatEl.innerHTML = "";
-    var cleanContent = stripPinMarker(content);
-    if(cleanContent){
-      chatEl.appendChild(buildChatRow("mine", "내가 보낸 말", cleanContent));
-    }
-    chatEl.appendChild(buildChatRow("reply", "목사님 답장", reply));
+    (items || []).forEach(function(item){
+      if(item.date) chatEl.appendChild(buildDateDivider(item.date));
+      var cleanContent = stripPinMarker(item.content);
+      if(cleanContent){
+        chatEl.appendChild(buildChatRow("mine", "내가 보낸 말", cleanContent));
+      }
+      chatEl.appendChild(buildChatRow("reply", "목사님 답장", item.reply));
+    });
     chatEl.style.display = "flex";
   }
 
@@ -1251,9 +1270,9 @@ footer{
       fetch(REPLY_LOOKUP_URL + "?name=" + encodeURIComponent(name) + "&pin=" + encodeURIComponent(pin))
         .then(function(r){ return r.json(); })
         .then(function(data){
-          if(data && data.found){
+          if(data && data.found && data.items && data.items.length){
             statusEl.textContent = "";
-            renderReplyChat(data.content, data.reply);
+            renderReplyChat(data.items);
           } else {
             statusEl.textContent = "이름 또는 번호가 일치하지 않거나, 아직 답장이 없습니다.";
           }
