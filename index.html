@@ -2,9 +2,20 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<meta name="description" content="이사야 43:1-7, 중고등부 말씀 방탈출 게임">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>두려움의 방 | 말씀 방탈출</title>
+<meta name="description" content="이사야 43:1-7, 중고등부 말씀 방탈출 게임">
+<style>
+  html, body { margin:0; padding:0; }
+  body {
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-left: env(safe-area-inset-left, 0px);
+    padding-right: env(safe-area-inset-right, 0px);
+    padding-bottom: calc(32px + env(safe-area-inset-bottom, 0px));
+  }
+</style>
+</head>
+<body>
 <style>
 /* ============================================================
    팔레트 — 어두운 돌방을 밝히는 등불 하나 (다크 전용, 단일 세계관)
@@ -38,9 +49,10 @@ body{
   font-family: var(--sans);
   padding-left: max(16px, env(safe-area-inset-left, 0px));
   padding-right: max(16px, env(safe-area-inset-right, 0px));
-  padding-top: env(safe-area-inset-top, 0px);
-  padding-block-end: calc(32px + env(safe-area-inset-bottom, 0px));
+  padding-block-end: 32px;
   -webkit-font-smoothing: antialiased;
+  word-break: keep-all;
+  overflow-wrap: break-word;
 }
 html, body{ height:100%; }
 @media (prefers-reduced-motion: reduce){
@@ -281,6 +293,61 @@ main{
   padding: 11px 16px;
   cursor:pointer;
 }
+.secondary-btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:8px;
+  width:100%;
+  margin-top: 12px;
+  background: var(--panel-2);
+  color: var(--accent-2);
+  font-family: var(--sans);
+  font-weight: 700;
+  font-size: 14px;
+  border: 1.5px solid var(--accent-dim);
+  border-radius: 12px;
+  padding: 13px 16px;
+  cursor:pointer;
+  transition: transform .15s;
+}
+.secondary-btn:active{ transform: scale(.98); }
+
+/* ---------- 답장 확인: 말풍선 ---------- */
+.chat-wrap{
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+  margin-top:14px;
+}
+.chat-row{ display:flex; flex-direction:column; max-width:100%; }
+.chat-row.mine{ align-items:flex-end; }
+.chat-row.reply{ align-items:flex-start; }
+.chat-name{
+  font-size:11px;
+  color: var(--muted);
+  margin-bottom:5px;
+  padding:0 4px;
+}
+.chat-bubble{
+  max-width: 88%;
+  padding: 11px 14px;
+  border-radius: 16px;
+  font-size: 13.5px;
+  line-height: 1.7;
+  white-space: pre-line;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+.chat-bubble.mine{
+  background: var(--panel-2);
+  color: var(--fg);
+  border: 1px solid var(--line);
+  border-bottom-right-radius: 4px;
+}
+.chat-bubble.reply{
+  background: linear-gradient(180deg, var(--accent-2), var(--accent));
+  color: #1a1407;
+  font-weight:600;
+  border-bottom-left-radius: 4px;
+}
 
 /* ---------- 인트로 ---------- */
 .intro-lamp{
@@ -356,6 +423,16 @@ main{
 }
 .field-textarea{ resize:none; min-height: 76px; line-height:1.6; }
 .field-input:focus, .field-textarea:focus{ outline: 2px solid var(--accent-dim); outline-offset:1px; }
+select.field-input{
+  appearance:none;
+  -webkit-appearance:none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%239b94a8' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;
+  background-position: right 12px center;
+  background-size: 18px;
+  padding-right: 36px;
+}
+select.field-input option{ background: var(--panel); color: var(--fg); }
 .deliver-btn{
   width:100%;
   background: linear-gradient(180deg, var(--accent-2), var(--accent));
@@ -381,6 +458,7 @@ main{
   color: var(--accent-2);
   margin-top:8px;
   line-height:1.6;
+  white-space: pre-line;
 }
 .deliver-note{
   font-size:13px;
@@ -577,8 +655,7 @@ footer{
 </style>
 
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@500;700&family=Noto+Sans+KR:wght@400;500;600;700&display=swap">
-</head>
-<body>
+
 <div class="topbar">
   <div class="brand">
     <svg viewBox="0 0 24 24" fill="none"><path d="M12 2c-1.5 3-4 5-4 8a4 4 0 0 0 8 0c0-3-2.5-5-4-8Z" fill="currentColor" opacity=".9"/><rect x="10.3" y="15" width="3.4" height="6" rx="1" fill="currentColor" opacity=".6"/></svg>
@@ -622,6 +699,14 @@ footer{
         <span>📖 이사야 43:1</span>
       </div>
       <button class="primary-btn ready" onclick="App.start()">방에 입장하기 →</button>
+      <button class="secondary-btn" id="check-reply-btn" onclick="App.toggleReplyCheck()">💬 목사님께 답장이 왔는지 확인하기</button>
+      <div id="reply-check-panel" style="display:none; margin-top:14px; text-align:left">
+        <label class="field-label" for="reply-name-input">이름</label>
+        <input class="field-input" id="reply-name-input" type="text" placeholder="내 이름을 정확히 입력해주세요" maxlength="12">
+        <button class="deliver-btn" onclick="App.checkReply()">답장 확인</button>
+        <div class="deliver-status" id="reply-status" aria-live="polite"></div>
+        <div id="reply-chat" class="chat-wrap" style="display:none" aria-live="polite"></div>
+      </div>
     </div>
   </section>
 
@@ -740,7 +825,7 @@ footer{
       </div>
 
       <div class="final-verse">
-        "너는 두려워하지 말라 <b>내가 너를 구속하였고</b><br>
+        "너는 두려워하지 말라 <b>내가 너를 구속하였고</b>
         내가 너를 지명하여 불렀나니 <b>너는 내 것이라</b>"
       </div>
       <div class="final-ref">이사야 43:1</div>
@@ -760,6 +845,28 @@ footer{
       <div class="divider"></div>
       <div class="section-label">선생님께 전하기</div>
       <p class="deliver-note">오늘 느낀 점이나 나누고 싶은 기도제목을 적으면 선생님께 바로 전달됩니다.</p>
+      <div id="class-field-wrap" style="display:none">
+        <label class="field-label" for="class-select">소속 반 <span style="color:var(--danger)">*필수</span></label>
+        <select class="field-input" id="class-select">
+          <option value="">반을 선택하세요</option>
+          <option>중1-1반</option>
+          <option>중1-2반</option>
+          <option>중1-3반</option>
+          <option>중2-1반</option>
+          <option>중2-2반</option>
+          <option>중2-3반</option>
+          <option>중2-4반</option>
+          <option>중3-1반</option>
+          <option>중3-2반</option>
+          <option>중3-3반</option>
+          <option>고1-1반</option>
+          <option>고1-2반</option>
+          <option>고2반</option>
+          <option>고3-1반</option>
+          <option>고3-2반</option>
+          <option>일반교사(반 없음)</option>
+        </select>
+      </div>
       <label class="field-label" for="teacher-note">나누고 싶은 이야기 · 기도제목</label>
       <textarea class="field-textarea" id="teacher-note" placeholder="예: 시험 망쳐도 하나님이 날 사랑하신다는 거 기억하고 싶어요"></textarea>
       <button class="deliver-btn" onclick="App.sendTo('teacher')">선생님께 보내기</button>
@@ -776,7 +883,7 @@ footer{
   </section>
 
 </main>
-<footer>이사야 43:1–7 · 261108 중고등부 설교를 바탕으로 제작</footer>
+<footer>11월 8일 이사야 43:1–7 중고등부 설교를 바탕으로 제작</footer>
 
 <script>
 (function(){
@@ -790,8 +897,14 @@ footer{
     from: "entry.1380117152",
     content: "entry.1763285252",
     sermonDate: "entry.820953926",
-    submitDate: "entry.112201991"
+    submitDate: "entry.112201991",
+    // 폼에 "소속 반" 질문을 추가한 뒤, 그 질문의 entry ID를 여기에 채워주세요.
+    // 비워두면 "선생님께 전하기"에서 반 선택 칸이 나타나지 않고 기존처럼 동작합니다.
+    classField: ""
   };
+  // Apps Script를 웹 앱으로 배포한 뒤 나오는 URL을 여기에 붙여넣으면
+  // "답장 확인하기" 기능이 켜집니다. 비워두면 버튼을 숨깁니다.
+  var REPLY_LOOKUP_URL = "https://script.google.com/macros/s/AKfycbxvfEu9qOLKcWhd_VyAFdJVOf7aRw8G0UV8jSmU5iM7QD-zgZC0qYgQJj1TRUWBoi3g/exec";
 
   var WORDS_SHUFFLED = ["것이라","두려워하지","너는","말라","내"];
   var WORDS_CORRECT   = ["두려워하지","말라","너는","내","것이라"];
@@ -938,13 +1051,14 @@ footer{
     try{ return new Date().toLocaleString("ko-KR", { timeZone: "Asia/Seoul" }); }
     catch(e){ return new Date().toString(); }
   }
-  function submitToSheet(from, name, content){
+  function submitToSheet(from, name, content, className){
     var body = new URLSearchParams();
     body.append(FORM_ENTRY.name, name);
     body.append(FORM_ENTRY.from, from);
     body.append(FORM_ENTRY.content, content);
     body.append(FORM_ENTRY.sermonDate, SERMON_DATE + " 설교");
     body.append(FORM_ENTRY.submitDate, nowKST());
+    if(FORM_ENTRY.classField && className) body.append(FORM_ENTRY.classField, className);
     return fetch(FORM_ACTION, {
       method: "POST",
       mode: "no-cors",
@@ -966,6 +1080,30 @@ footer{
         resolve(ok);
       }catch(e){ resolve(false); }
     });
+  }
+
+  // 답장 확인 결과를 말풍선 두 개(내가 보낸 말 / 목사님 답장)로 그려줌
+  function buildChatRow(kind, label, text){
+    var row = document.createElement("div");
+    row.className = "chat-row " + kind;
+    var name = document.createElement("span");
+    name.className = "chat-name";
+    name.textContent = label;
+    var bubble = document.createElement("div");
+    bubble.className = "chat-bubble " + kind;
+    bubble.textContent = text; // textContent만 사용 — 학생이 적은 글자를 그대로, 안전하게 표시
+    row.appendChild(name);
+    row.appendChild(bubble);
+    return row;
+  }
+  function renderReplyChat(content, reply){
+    var chatEl = $("reply-chat");
+    chatEl.innerHTML = "";
+    if(content){
+      chatEl.appendChild(buildChatRow("mine", "내가 보낸 말", content));
+    }
+    chatEl.appendChild(buildChatRow("reply", "목사님 답장", reply));
+    chatEl.style.display = "flex";
   }
 
   var App = {
@@ -1023,6 +1161,16 @@ footer{
       var noteEl = $(isTeacher ? "teacher-note" : "pastor-note");
       var name = state.playerName.trim() || "이름 없음";
       var note = noteEl.value.trim();
+      var className = "";
+
+      if(isTeacher && FORM_ENTRY.classField){
+        className = $("class-select").value;
+        if(!className){
+          statusEl.textContent = "먼저 소속 반을 선택해주세요.";
+          $("class-select").focus();
+          return;
+        }
+      }
 
       if(!note){
         statusEl.textContent = (isTeacher ? "선생님" : "목사님") + "께 전하고 싶은 말이나 기도제목을 적어주면 보내드릴게!";
@@ -1031,7 +1179,7 @@ footer{
       }
 
       statusEl.textContent = "보내는 중...";
-      submitToSheet(isTeacher ? "선생님" : "목사님", name, note)
+      submitToSheet(isTeacher ? "선생님" : "목사님", name, note, className)
         .then(function(){
           statusEl.textContent = "✅ " + (isTeacher ? "선생님" : "목사님") + "께 전달했어요! 확인하시고 연락 주실 거예요.";
           noteEl.value = "";
@@ -1042,6 +1190,41 @@ footer{
               ? "전송에 실패했어요(네트워크 확인). 대신 복사했으니 직접 전해줘 📋"
               : "전송에 실패했어요. 와이파이/데이터 연결을 확인하고 다시 눌러줘.";
           });
+        });
+    },
+    toggleReplyCheck: function(){
+      var panel = $("reply-check-panel");
+      var show = panel.style.display === "none";
+      panel.style.display = show ? "block" : "none";
+      if(show) $("reply-name-input").focus();
+    },
+    checkReply: function(){
+      var name = $("reply-name-input").value.trim();
+      var statusEl = $("reply-status");
+      var chatEl = $("reply-chat");
+      chatEl.style.display = "none";
+      chatEl.innerHTML = "";
+      if(!name){
+        statusEl.textContent = "이름을 입력해주세요.";
+        return;
+      }
+      if(!REPLY_LOOKUP_URL){
+        statusEl.textContent = "아직 답장 확인 기능이 준비 중입니다.";
+        return;
+      }
+      statusEl.textContent = "확인하는 중...";
+      fetch(REPLY_LOOKUP_URL + "?name=" + encodeURIComponent(name))
+        .then(function(r){ return r.json(); })
+        .then(function(data){
+          if(data && data.found){
+            statusEl.textContent = "";
+            renderReplyChat(data.content, data.reply);
+          } else {
+            statusEl.textContent = "아직 답장이 없습니다. 조금 더 기다려주세요.";
+          }
+        })
+        .catch(function(){
+          statusEl.textContent = "확인 중 오류가 발생했습니다. 다시 시도해주세요.";
         });
     },
     reset: function(){
@@ -1057,11 +1240,14 @@ footer{
     renderPool();
     renderAssembled();
     updateLockReadout();
+    if(FORM_ENTRY.classField) $("class-field-wrap").style.display = "block";
+    if(!REPLY_LOOKUP_URL) $("check-reply-btn").style.display = "none";
     showScreen(0);
   }
 
   boot();
 })();
 </script>
+
 </body>
 </html>
