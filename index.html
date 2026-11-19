@@ -1484,16 +1484,13 @@ footer{
           } else if(reason === "bad_pin_format"){
             msg = "확인 번호는 숫자 4자리여야 해요. 입력한 번호를 다시 확인해주세요.";
           } else if(reason === "no_name"){
-            msg = "'" + name + "' 이름으로 보낸 글을 찾을 수 없어요. 아직 목사님께 글을 보내지 않았거나, 이름이 다를 수 있어요.";
-            if(data.similar) msg += "\n비슷한 이름으로 보낸 글은 있어요. 이름에 오타나 띄어쓰기가 없는지 확인해주세요.";
+            msg = "이름을 정확히 입력해 주세요.";
           } else if(reason === "pin_required"){
             msg = "이름은 맞아요! 그런데 이 글은 확인 번호(4자리)가 필요해요. 보낼 때 입력했던 번호를 적어주세요.";
           } else if(reason === "wrong_pin"){
             msg = "이름은 맞는데 확인 번호가 달라요. 보낼 때 입력했던 4자리 번호를 다시 확인해주세요.";
-          } else if(reason === "legacy_closed"){
-            msg = "번호 없이 보낸 예전 글은 11월 22일까지만 이름으로 확인할 수 있었어요. 목사님께 직접 물어봐 주세요.";
           } else if(reason === "no_reply_yet" || (!reason && data && data.matched)){
-            msg = "아직 답장이 없습니다. 조금만 기다려 주세요.";
+            msg = "목사님이 확인 후 바로 답장을 주실 예정이니 조금만 기다려주세요.";
           } else {
             msg = "이름 또는 번호가 일치하지 않습니다."; // 구버전 서버 응답일 때의 기본 문구
           }
