@@ -739,7 +739,7 @@ footer{
         <label class="field-label" for="reply-name-input">이름</label>
         <input class="field-input" id="reply-name-input" type="text" placeholder="내 이름을 정확히 입력해주세요" maxlength="12">
         <label class="field-label" for="reply-pin-input">확인 번호 (4자리)</label>
-        <input class="field-input" id="reply-pin-input" type="text" inputmode="numeric" maxlength="4" placeholder="보낼 때 입력했던 4자리 번호 (예전 글은 비워두세요)">
+        <input class="field-input" id="reply-pin-input" type="text" inputmode="numeric" maxlength="4" placeholder="보낼 때 입력했던 4자리 번호 (번호 없이 보낸 예전 글은 비워두세요)">
         <button class="deliver-btn" onclick="App.checkReply()">답장 확인</button>
         <div class="deliver-status" id="reply-status" aria-live="polite"></div>
         <div id="reply-chat" class="chat-wrap" style="display:none" aria-live="polite"></div>
@@ -1459,7 +1459,8 @@ footer{
         return;
       }
       if(pin && !/^[0-9]{4}$/.test(pin)){
-        statusEl.textContent = "확인 번호는 숫자 4자리로 입력해주세요.";
+        statusEl.textContent = "확인 번호는 숫자 4자리여야 해요. 입력한 번호에 글자나 빠진 숫자가 없는지 다시 확인해주세요.";
+        $("reply-pin-input").focus();
         return;
       }
       if(!REPLY_LOOKUP_URL){
@@ -1473,14 +1474,33 @@ footer{
           if(data && data.found && data.items && data.items.length){
             statusEl.textContent = "";
             renderReplyChat(data.items);
-          } else if(data && data.matched){
-            statusEl.textContent = "아직 답장이 없습니다. 조금만 기다려 주세요.";
-          } else {
-            statusEl.textContent = "이름 또는 번호가 일치하지 않습니다.";
+            return;
           }
+          // 서버가 알려주는 이유(reason)에 따라 정확한 안내를 보여줌
+          var reason = data && data.reason;
+          var msg;
+          if(reason === "empty_name"){
+            msg = "이름을 입력해주세요.";
+          } else if(reason === "bad_pin_format"){
+            msg = "확인 번호는 숫자 4자리여야 해요. 입력한 번호를 다시 확인해주세요.";
+          } else if(reason === "no_name"){
+            msg = "'" + name + "' 이름으로 보낸 글을 찾을 수 없어요. 아직 목사님께 글을 보내지 않았거나, 이름이 다를 수 있어요.";
+            if(data.similar) msg += "\n비슷한 이름으로 보낸 글은 있어요. 이름에 오타나 띄어쓰기가 없는지 확인해주세요.";
+          } else if(reason === "pin_required"){
+            msg = "이름은 맞아요! 그런데 이 글은 확인 번호(4자리)가 필요해요. 보낼 때 입력했던 번호를 적어주세요.";
+          } else if(reason === "wrong_pin"){
+            msg = "이름은 맞는데 확인 번호가 달라요. 보낼 때 입력했던 4자리 번호를 다시 확인해주세요.";
+          } else if(reason === "legacy_closed"){
+            msg = "번호 없이 보낸 예전 글은 11월 22일까지만 이름으로 확인할 수 있었어요. 목사님께 직접 물어봐 주세요.";
+          } else if(reason === "no_reply_yet" || (!reason && data && data.matched)){
+            msg = "아직 답장이 없습니다. 조금만 기다려 주세요.";
+          } else {
+            msg = "이름 또는 번호가 일치하지 않습니다."; // 구버전 서버 응답일 때의 기본 문구
+          }
+          statusEl.textContent = msg;
         })
         .catch(function(){
-          statusEl.textContent = "확인 중 오류가 발생했습니다. 다시 시도해주세요.";
+          statusEl.textContent = "확인 중 오류가 발생했습니다. 인터넷 연결을 확인하고 다시 시도해주세요.";
         });
     },
     reset: function(){
