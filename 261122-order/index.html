@@ -1,0 +1,1348 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>화평의 길 | 말씀 순서배열</title>
+<meta name="description" content="마태복음 5:9, 중고등부 말씀 순서배열 게임">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@500;700&family=Noto+Sans+KR:wght@400;500;600;700&display=swap">
+<style>
+/* ============================================================
+   팔레트 — 따뜻한 금빛(다크 전용). 지난 게임들과 같은 분위기를 유지한다.
+   레이아웃 — 중앙 1열. 섞인 카드를 순서대로 쌓아 화평의 길을 완성하고(1·2단계),
+   이름표를 놓은 뒤(마무리), 본문 구절로 길이 완성된다.
+   ============================================================ */
+:root{
+  color-scheme: dark;
+  --bg: #120e0d;
+  --bg-glow: radial-gradient(ellipse 70% 55% at 50% -10%, #33241a 0%, #120e0d 58%);
+  --panel: #1d1715;
+  --panel-2: #271e1b;
+  --inset: #17120f;
+  --line: #3a2e29;
+  --fg: #f1e8dc;
+  --muted: #a6998d;
+  --muted-2: #7a6e64;
+  --accent: #e3a24b;
+  --accent-2: #f5c777;
+  --accent-dim: #8a6230;
+  --wine: #8f2f42;
+  --wine-2: #b44a60;
+  --danger: #cf7160;
+  --serif: "Noto Serif KR", "Nanum Myeongjo", serif;
+  --sans: "Noto Sans KR", -apple-system, "Pretendard", sans-serif;
+}
+*{box-sizing:border-box}
+html, body{ margin:0; padding:0; height:100%; }
+body{
+  min-height:100%;
+  background: var(--bg) var(--bg-glow);
+  background-repeat: no-repeat;
+  color: var(--fg);
+  font-family: var(--sans);
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-bottom: calc(32px + env(safe-area-inset-bottom, 0px));
+  -webkit-font-smoothing: antialiased;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+@media (prefers-reduced-motion: reduce){
+  *, *::before, *::after{
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ---------- 테스트 모드 표시 (주소 끝에 ?test) ---------- */
+.testbar{
+  max-width: 560px; margin: 10px auto 0;
+  background: #3a2f12; border: 1px solid var(--accent-dim); color: var(--accent-2);
+  border-radius: 10px; padding: 8px 12px; font-size: 12.5px;
+}
+
+/* ---------- 상단 고정 바 ---------- */
+.topbar{
+  position: sticky;
+  top: env(safe-area-inset-top, 0px);
+  z-index: 20;
+  margin: 0 -16px;
+  padding: 14px max(16px, env(safe-area-inset-left,0px)) 12px max(16px, env(safe-area-inset-right,0px));
+  background: linear-gradient(180deg, rgba(18,14,13,.97) 70%, rgba(18,14,13,0));
+  backdrop-filter: blur(2px);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+}
+.brand{
+  display:flex; align-items:center; gap:8px;
+  font-family: var(--serif);
+  font-weight:700;
+  font-size: 15px;
+  letter-spacing: .01em;
+  color: var(--accent-2);
+  white-space:nowrap;
+}
+.brand svg{ width:18px; height:18px; flex:none; }
+.pair-readout{
+  display:flex; align-items:center; gap:9px;
+  background: var(--inset);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 8px 16px;
+}
+.pdot{
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: var(--line);
+  transition: background .4s, box-shadow .4s, transform .4s;
+}
+.pdot.lit{
+  background: radial-gradient(circle at 35% 30%, var(--accent-2), var(--accent) 70%);
+  box-shadow: 0 0 10px rgba(245,199,119,.6);
+  transform: scale(1.12);
+}
+.timer{
+  font-variant-numeric: tabular-nums;
+  font-size: 13px;
+  color: var(--muted-2);
+  white-space: nowrap;
+}
+
+/* ---------- 레이아웃 ---------- */
+main{
+  max-width: 560px;
+  margin: 0 auto;
+  min-width: 0;
+}
+.screen{ display:none; }
+.screen.active{ display:block; animation: fadein .5s ease both; }
+@keyframes fadein{ from{opacity:0; transform:translateY(6px)} to{opacity:1; transform:translateY(0)} }
+
+.room-card{
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 26px 22px 24px;
+  margin-top: 18px;
+  box-shadow: 0 30px 60px -30px rgba(0,0,0,.6);
+  position: relative;
+  overflow:hidden;
+}
+.room-card::before{
+  content:"";
+  position:absolute; inset:0 0 auto 0; height:1px;
+  background: linear-gradient(90deg, transparent, var(--accent-dim), transparent);
+}
+@media (max-width: 400px){
+  .room-card{ padding: 22px 14px 20px; }
+}
+
+.room-eyebrow{
+  font-size: 12.5px;
+  letter-spacing: .14em;
+  color: var(--accent);
+  text-transform: uppercase;
+  font-weight:600;
+  display:flex; align-items:center; gap:8px;
+}
+.room-title{
+  font-family: var(--serif);
+  font-weight: 700;
+  font-size: clamp(22px, 6vw, 28px);
+  margin: 6px 0 14px;
+  text-wrap: balance;
+  line-height:1.3;
+}
+.flavor{
+  font-size: 14px;
+  line-height: 1.75;
+  color: var(--muted);
+  background: var(--inset);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--accent-dim);
+  border-radius: 10px;
+  padding: 12px 15px;
+  margin-bottom: 16px;
+}
+.flavor b{ color: var(--fg); font-weight:600; }
+
+/* ---------- 순서배열 ---------- */
+.game-status{
+  min-height: 40px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--muted);
+  margin: 0 0 10px;
+  padding: 0 2px;
+  white-space: pre-line;
+}
+.game-status.good{ color: var(--accent-2); font-weight:600; }
+.game-status.bad{ color: var(--danger); }
+.game-status.tip{
+  color: var(--fg);
+  background: var(--inset);
+  border: 1px solid var(--accent-dim);
+  border-radius: 10px;
+  padding: 8px 12px;
+}
+.section-label{
+  font-size: 12px;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  color: var(--muted-2);
+  font-weight:700;
+  margin-bottom:10px;
+}
+.slot{ display:flex; align-items:stretch; gap:10px; margin-bottom:8px; }
+.snum{
+  flex:none;
+  width: 28px; height: 28px; margin-top: 12px;
+  border-radius: 50%;
+  display:flex; align-items:center; justify-content:center;
+  background: var(--inset);
+  border: 1px solid var(--accent-dim);
+  color: var(--accent-2);
+  font-weight: 700; font-size: 13px;
+}
+.sbox{
+  flex:1; min-width:0;
+  min-height: 52px;
+  display:flex; align-items:center;
+  text-align:left;
+  font-family: var(--sans);
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--muted-2);
+  background: var(--inset);
+  border: 1.5px dashed var(--line);
+  border-radius: 12px;
+  padding: 11px 14px;
+}
+button.sbox{ cursor:pointer; }
+.sbox.filled{
+  color: var(--fg);
+  background: var(--panel-2);
+  border: 1px solid var(--accent-dim);
+}
+.sbox.locked{
+  cursor: default;
+  border-color: var(--accent);
+  background: linear-gradient(180deg, rgba(227,162,75,.2), rgba(227,162,75,.06));
+  box-shadow: 0 0 0 1px var(--accent) inset, 0 0 18px rgba(245,199,119,.18);
+}
+.sbox.locked::after{ content:"✔"; margin-left:auto; padding-left:10px; color: var(--accent-2); }
+.sbox.wrong{ border-color: var(--danger); animation: shake .4s; }
+@keyframes shake{
+  10%,90%{ transform: translateX(-2px) }
+  20%,80%{ transform: translateX(4px) }
+  30%,50%,70%{ transform: translateX(-7px) }
+  40%,60%{ transform: translateX(7px) }
+}
+.pool{ display:flex; flex-direction:column; gap:8px; }
+.pcard{
+  width:100%;
+  text-align:left;
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  color: var(--fg);
+  border-radius: 12px;
+  padding: 13px 16px;
+  min-height: 52px;
+  font-size: 14px;
+  font-family: var(--sans);
+  line-height:1.55;
+  cursor:pointer;
+  transition: border-color .2s, transform .15s;
+}
+.pcard:hover{ border-color: var(--accent-dim); }
+.pcard:active{ transform: scale(.985); }
+.pool-empty{
+  font-size: 13px; color: var(--muted-2); text-align:center; padding: 10px 0;
+}
+.tool-row{ display:flex; gap:8px; }
+.tool-row .ghost-btn{ width:auto; flex:1; }
+
+.key-reveal{
+  display:none;
+  align-items:center;
+  gap:14px;
+  margin-top: 16px;
+  padding: 14px 16px;
+  background: var(--inset);
+  border: 1px solid var(--accent-dim);
+  border-radius: 12px;
+}
+.key-reveal.show{ display:flex; animation: fadein .5s ease both; }
+.key-num{
+  flex:none;
+  width: 48px; height: 48px;
+  border-radius: 50%;
+  display:flex; align-items:center; justify-content:center;
+  font-size: 22px;
+  background: radial-gradient(circle at 35% 30%, var(--accent-2), var(--accent) 70%);
+  box-shadow: 0 0 22px rgba(245,199,119,.5);
+}
+.key-text{ font-size: 13.5px; color: var(--muted); line-height:1.6; }
+.key-text b{ color: var(--accent-2); }
+
+.hint{
+  min-height: 20px;
+  font-size: 13px;
+  color: var(--danger);
+  margin-top: 10px;
+}
+
+/* ---------- 버튼 ---------- */
+.primary-btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:8px;
+  width:100%;
+  margin-top: 20px;
+  background: linear-gradient(180deg, var(--accent-2), var(--accent));
+  color: #1f1408;
+  font-family: var(--sans);
+  font-weight: 700;
+  font-size: 15px;
+  border: none;
+  border-radius: 12px;
+  padding: 14px 18px;
+  cursor:pointer;
+  opacity: .35;
+  pointer-events: none;
+  transition: opacity .3s, transform .15s;
+}
+.primary-btn.ready{ opacity:1; pointer-events:auto; }
+.primary-btn:active.ready{ transform: scale(.98); }
+.ghost-btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:8px;
+  width:100%;
+  margin-top: 10px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 13.5px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 11px 16px;
+  cursor:pointer;
+}
+.secondary-btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:8px;
+  width:100%;
+  margin-top: 12px;
+  background: var(--panel-2);
+  color: var(--accent-2);
+  font-family: var(--sans);
+  font-weight: 700;
+  font-size: 14px;
+  border: 1.5px solid var(--accent-dim);
+  border-radius: 12px;
+  padding: 13px 16px;
+  cursor:pointer;
+  transition: transform .15s;
+}
+.secondary-btn:active{ transform: scale(.98); }
+
+/* ---------- 답장 확인: 말풍선 ---------- */
+.chat-wrap{
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+  margin-top:14px;
+}
+.chat-date{
+  align-self:center;
+  font-size:11px;
+  color: var(--muted-2);
+  background: var(--inset);
+  padding:3px 11px;
+  border-radius:10px;
+  margin: 6px 0 0;
+}
+.chat-row{ display:flex; flex-direction:column; max-width:100%; }
+.chat-row.mine{ align-items:flex-end; }
+.chat-row.reply{ align-items:flex-start; }
+.chat-name{
+  font-size:11px;
+  color: var(--muted);
+  margin-bottom:5px;
+  padding:0 4px;
+}
+.chat-bubble{
+  max-width: 88%;
+  padding: 11px 14px;
+  border-radius: 16px;
+  font-size: 13.5px;
+  line-height: 1.7;
+  white-space: pre-line;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+.chat-bubble.mine{
+  background: var(--panel-2);
+  color: var(--fg);
+  border: 1px solid var(--line);
+  border-bottom-right-radius: 4px;
+}
+.chat-bubble.reply{
+  background: linear-gradient(180deg, var(--accent-2), var(--accent));
+  color: #1f1408;
+  font-weight:600;
+  border-bottom-left-radius: 4px;
+}
+
+/* ---------- 인트로 ---------- */
+.intro-icon{
+  font-size: 64px; line-height: 1;
+  margin: 10px auto 4px;
+  text-align:center;
+}
+.intro-wrap{ text-align:center; padding-top: 6px; }
+.intro-title{
+  font-family: var(--serif);
+  font-weight:700;
+  font-size: clamp(26px, 8vw, 34px);
+  margin: 14px 0 10px;
+  color: var(--fg);
+}
+.intro-sub{
+  font-size: 14.5px;
+  color: var(--muted);
+  line-height:1.8;
+  max-width: 420px;
+  margin: 0 auto 6px;
+}
+.intro-meta{
+  margin-top: 18px;
+  display:flex; justify-content:center; flex-wrap:wrap; gap:8px 18px;
+  font-size: 12.5px;
+  color: var(--muted-2);
+}
+.intro-meta span{ display:flex; align-items:center; gap:6px; }
+
+/* ---------- 이름표 / 입력 ---------- */
+.name-row{
+  display:flex; gap:8px; margin-bottom: 16px;
+}
+.name-row input{
+  flex:1; min-width:0;
+  background: var(--inset);
+  border: 1px solid var(--line);
+  color: var(--fg);
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-size: 15px;
+  font-family: var(--sans);
+}
+.name-row input:focus{ outline: 2px solid var(--accent-dim); outline-offset:1px; }
+.name-row button{
+  flex:none;
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  color: var(--accent-2);
+  border-radius: 10px;
+  padding: 0 16px;
+  font-weight:600;
+  cursor:pointer;
+}
+.field-label{
+  display:block;
+  font-size: 12.5px;
+  color: var(--muted);
+  font-weight:600;
+  margin-bottom:6px;
+}
+.field-input, .field-textarea{
+  width:100%;
+  background: var(--inset);
+  border: 1px solid var(--line);
+  color: var(--fg);
+  border-radius: 10px;
+  padding: 11px 13px;
+  font-size: 14px;
+  font-family: var(--sans);
+  margin-bottom: 12px;
+}
+.field-textarea{ resize:none; min-height: 76px; line-height:1.6; }
+.field-input:focus, .field-textarea:focus{ outline: 2px solid var(--accent-dim); outline-offset:1px; }
+select.field-input{
+  appearance:none;
+  -webkit-appearance:none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23a6998d' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;
+  background-position: right 12px center;
+  background-size: 18px;
+  padding-right: 36px;
+}
+select.field-input option{ background: var(--panel); color: var(--fg); }
+.deliver-btn{
+  width:100%;
+  background: linear-gradient(180deg, var(--accent-2), var(--accent));
+  color:#1f1408;
+  font-weight:700;
+  font-size:14.5px;
+  font-family: var(--sans);
+  border:none;
+  border-radius: 10px;
+  padding: 12px 16px;
+  cursor:pointer;
+}
+.deliver-btn:active{ transform: scale(.98); }
+.deliver-status{
+  min-height:18px;
+  text-align:center;
+  font-size:12.5px;
+  color: var(--accent-2);
+  margin-top:8px;
+  line-height:1.6;
+  white-space: pre-line;
+}
+.deliver-note{
+  font-size:13px;
+  color: var(--muted);
+  line-height:1.6;
+  margin: -4px 0 14px;
+}
+
+.personal-line{
+  display:none;
+  font-family: var(--serif);
+  font-size: 17px;
+  line-height: 1.7;
+  color: var(--accent-2);
+  text-align:center;
+  padding: 14px;
+  margin-bottom: 16px;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+.personal-line.show{ display:block; animation: fadein .5s ease both; }
+
+/* ---------- 길 완성 ---------- */
+.peace-wrap{
+  margin: 4px 0 20px;
+  border-radius: 14px;
+  overflow:hidden;
+  background: radial-gradient(ellipse at 50% 55%, #4a3114 0%, #120e0d 72%);
+  padding: 22px 0 6px;
+  text-align:center;
+}
+.peace-dove{
+  font-size: 56px; line-height:1;
+  opacity:0; transform: translateY(10px) scale(.9);
+  transition: opacity 1s ease, transform 1s ease;
+}
+.peace-wrap.on .peace-dove{ opacity:1; transform: translateY(0) scale(1); }
+.table-glow{
+  text-align:center;
+  font-family: var(--serif);
+  color: var(--accent-2);
+  font-size: 13px;
+  letter-spacing: .1em;
+  padding: 10px 0 10px;
+}
+
+.final-verse{
+  font-family: var(--serif);
+  font-size: 18px;
+  line-height: 1.9;
+  color: var(--fg);
+  text-align:center;
+  padding: 4px 2px 6px;
+}
+.final-verse p{ margin: 0 0 10px; }
+.final-verse b{ color: var(--accent-2); }
+.final-ref{
+  text-align:center;
+  font-size: 13px;
+  color: var(--accent);
+  margin-top: 2px;
+  margin-bottom: 18px;
+}
+.divider{
+  height:1px;
+  background: linear-gradient(90deg, transparent, var(--line), transparent);
+  margin: 18px 0;
+}
+.reflect-q{
+  font-size: 14px;
+  line-height:1.7;
+  color: var(--muted);
+  margin-bottom:10px;
+  padding-left: 18px;
+  position:relative;
+}
+.reflect-q::before{
+  content: "·";
+  position:absolute; left:4px; top:0;
+  color: var(--accent);
+  font-weight:900;
+}
+.more-link{
+  background:none; border:none;
+  color: var(--accent);
+  font-size: 13px;
+  font-weight:600;
+  cursor:pointer;
+  padding: 4px 0;
+}
+.stat-row{
+  display:flex; justify-content:center; gap:22px;
+  margin: 18px 0 4px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.stat-row b{
+  display:block; font-family: var(--serif); font-size: 20px; color: var(--accent-2);
+  font-variant-numeric: tabular-nums;
+  text-align:center;
+}
+.stat-row > div{ text-align:center; }
+footer{
+  text-align:center;
+  color: var(--muted-2);
+  font-size: 12px;
+  margin-top: 28px;
+  padding-bottom: 6px;
+}
+</style>
+</head>
+<body>
+
+<div class="testbar" id="testbar" style="display:none">🧪 테스트 모드입니다. 선생님/목사님께 보내기를 눌러도 실제로 전송되지 않아요.</div>
+
+<div class="topbar">
+  <div class="brand">
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 20C4 11 10 5 20 4c0 10-6 16-15 16z" fill="currentColor" opacity=".9"/><path d="M4.5 19.5L14 10" stroke="#120e0d" stroke-width="1.4" stroke-linecap="round"/></svg>
+    화평의 길
+  </div>
+  <div class="pair-readout" id="pair-readout" role="img" aria-label="완성한 단계 0 / 2">
+    <span class="pdot" id="pd-0"></span><span class="pdot" id="pd-1"></span>
+  </div>
+  <div class="timer" id="timer">00:00</div>
+</div>
+
+<main>
+
+  <!-- ===================== 0. 인트로 ===================== -->
+  <section class="screen active" id="screen-intro">
+    <div class="room-card intro-wrap">
+      <div class="intro-icon" aria-hidden="true">🕊️</div>
+      <div class="room-eyebrow" style="justify-content:center">중고등부 말씀 순서배열</div>
+      <div class="intro-title">화평의 길</div>
+      <p class="intro-sub">
+        친구와 사이가 틀어졌을 때, 우리는 무엇부터 해야 할까요? 섞여 있는
+        <b style="color:var(--accent-2)">카드를 순서대로</b> 쌓아서 화평의 길을 완성해 보세요.
+      </p>
+      <p class="intro-sub">맞은 카드는 금빛으로 고정되고, 틀린 카드만 다시 고르면 돼요. 두 번 틀릴 때마다 힌트를 드려요.</p>
+      <div class="intro-meta">
+        <span>🃏 카드 11장 · 2단계</span>
+        <span>⏱ 약 5분</span>
+        <span>📖 마태복음 5:9</span>
+      </div>
+      <button class="primary-btn ready" onclick="App.start()">길 떠나기 →</button>
+      <button class="secondary-btn" id="check-reply-btn" onclick="App.toggleReplyCheck()">💬 목사님께 답장이 왔는지 확인하기</button>
+      <div id="reply-check-panel" style="display:none; margin-top:14px; text-align:left">
+        <label class="field-label" for="reply-name-input">이름</label>
+        <input class="field-input" id="reply-name-input" type="text" placeholder="내 이름을 정확히 입력해주세요" maxlength="12">
+        <label class="field-label" for="reply-pin-input">확인 번호 (4자리)</label>
+        <input class="field-input" id="reply-pin-input" type="text" inputmode="numeric" maxlength="4" placeholder="보낼 때 입력했던 4자리 번호 (번호 없이 보낸 예전 글은 비워두세요)">
+        <button class="deliver-btn" onclick="App.checkReply()">답장 확인</button>
+        <div class="deliver-status" id="reply-status" aria-live="polite"></div>
+        <div id="reply-chat" class="chat-wrap" style="display:none" aria-live="polite"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== 1. 순서배열 (1·2단계 공용) ===================== -->
+  <section class="screen" id="screen-1">
+    <div class="room-card">
+      <div class="room-eyebrow" id="round-eyebrow"></div>
+      <div class="room-title" id="round-title"></div>
+      <div class="flavor" id="round-flavor"></div>
+      <div class="game-status" id="game-status" aria-live="polite"></div>
+
+      <div class="section-label">① 순서대로 쌓기 · 위에서부터 1번</div>
+      <div id="slots"></div>
+
+      <div class="section-label" id="pool-label" style="margin-top:18px">② 카드 고르기 · 눌러서 올리기</div>
+      <div class="pool" id="pool"></div>
+
+      <div class="key-reveal" id="reveal-round" aria-live="polite">
+        <div class="key-num">🕊️</div>
+        <div class="key-text" id="reveal-text"></div>
+      </div>
+
+      <div class="tool-row" id="tool-row">
+        <button type="button" class="ghost-btn" onclick="App.hint()">💡 힌트</button>
+        <button type="button" class="ghost-btn" onclick="App.shuffleRound()">↺ 다시 섞기</button>
+      </div>
+      <button class="primary-btn" id="check-btn" onclick="App.check()">확인하기</button>
+      <button class="primary-btn" id="next-1" onclick="App.nextRound()" style="display:none">다음 →</button>
+    </div>
+  </section>
+
+  <!-- ===================== 2. 화평의 이름표 ===================== -->
+  <section class="screen" id="screen-2">
+    <div class="room-card">
+      <div class="room-eyebrow">마무리 · 화평의 이름표</div>
+      <div class="room-title">화평을 이루는 하나님의 자녀</div>
+      <div class="flavor">
+        예수님이 먼저 우리와 하나님 사이의 화해를 이루셨어요. 그 예수님을 믿는 <b>나</b>도
+        화평을 이루는 하나님의 자녀예요. 이름표에 내 이름을 적어 주세요.
+      </div>
+      <label class="field-label" for="name-input">당신의 이름 <span style="color:var(--danger)">*필수</span></label>
+      <div class="name-row">
+        <input id="name-input" type="text" placeholder="이름을 적어보세요" maxlength="12">
+        <button type="button" onclick="App.sayName()">놓기</button>
+      </div>
+      <div class="personal-line" id="personal-line" aria-live="polite"></div>
+      <div class="hint" id="hint-4" aria-live="polite"></div>
+      <button class="primary-btn" id="next-2" onclick="App.finish()">화평의 말씀 확인하기 →</button>
+    </div>
+  </section>
+
+  <!-- ===================== 3. 길 완성 ===================== -->
+  <section class="screen" id="screen-3">
+    <div class="room-card">
+      <div class="room-eyebrow">화평의 길 완성</div>
+      <div class="room-title">화평하게 하는 자는 복이 있나니</div>
+
+      <div class="peace-wrap" id="peace-wrap">
+        <div class="peace-dove" aria-hidden="true">🕊️</div>
+        <div class="table-glow">화평을 이루는 하나님의 자녀</div>
+      </div>
+
+      <div class="final-verse">
+        <p><b>화평하게 하는 자</b>는 복이 있나니 그들이 <b>하나님의 아들이라 일컬음을 받을 것임이요</b></p>
+      </div>
+      <div class="final-ref">마태복음 5:9</div>
+
+      <div class="stat-row">
+        <div><b id="final-time">00:00</b>걸린 시간</div>
+        <div><b>2 / 2</b>완성한 단계</div>
+        <div><b id="final-misses">0</b>틀린 횟수</div>
+      </div>
+
+      <div class="divider"></div>
+      <div class="section-label">오늘, 나에게</div>
+      <p class="reflect-q">요즘 나와 평화가 깨진 사람이 있나요? 이번 주, 그 사람과 평화를 이루기 위해 내가 할 수 있는 첫걸음은 무엇일까요?</p>
+      <p class="reflect-q">누군가에 대한 말을 들었을 때, 바로 반응하지 않고 '한 템포' 늦추려면 어떻게 해야 할까요?</p>
+      <p class="reflect-q" id="extra-q" style="display:none">하나님께 용서받은 은혜를 기억하면, 불편한 사람을 대하는 내 마음이 어떻게 달라질까요?</p>
+      <button class="more-link" id="more-btn" onclick="App.toggleMore()">질문 한 가지 더 보기 ↓</button>
+
+      <div class="divider"></div>
+      <div class="section-label">선생님께 전하기</div>
+      <p class="deliver-note">오늘 느낀 점이나 나누고 싶은 기도제목을 적으면 선생님께 바로 전달됩니다.</p>
+      <div id="class-field-wrap" style="display:none">
+        <label class="field-label" for="class-select">소속 반 <span style="color:var(--danger)">*필수</span></label>
+        <select class="field-input" id="class-select">
+          <option value="">반을 선택하세요</option>
+          <option>중1-1반</option>
+          <option>중1-2반</option>
+          <option>중1-3반</option>
+          <option>중2-1반</option>
+          <option>중2-2반</option>
+          <option>중2-3반</option>
+          <option>중2-4반</option>
+          <option>중3-1반</option>
+          <option>중3-2반</option>
+          <option>중3-3반</option>
+          <option>고1-1반</option>
+          <option>고1-2반</option>
+          <option>고2반</option>
+          <option>고3-1반</option>
+          <option>고3-2반</option>
+          <option>일반교사(반 없음)</option>
+        </select>
+      </div>
+      <label class="field-label" for="teacher-note">나누고 싶은 이야기 · 기도제목</label>
+      <textarea class="field-textarea" id="teacher-note" placeholder="예: 이번 주에 화해하고 싶은 친구가 있어요. 기도해 주세요"></textarea>
+      <button class="deliver-btn" onclick="App.sendTo('teacher')">선생님께 보내기</button>
+      <div class="deliver-status" id="teacher-status" aria-live="polite"></div>
+
+      <div class="divider"></div>
+      <div class="section-label">목사님께 하고 싶은 말 · 기도제목</div>
+      <textarea class="field-textarea" id="pastor-note" placeholder="예: 목사님, 오늘 말씀 듣고 이런 생각이 들었어요... / 요즘 이런 기도제목이 있어요..."></textarea>
+      <label class="field-label" for="pastor-pin-input">답장 확인 번호 (선택, 4자리)</label>
+      <input class="field-input" id="pastor-pin-input" type="text" inputmode="numeric" maxlength="4" placeholder="나중에 답장을 확인하고 싶으면 숫자 4자리를 입력하세요">
+      <button class="deliver-btn" onclick="App.sendTo('pastor')">목사님께 보내기</button>
+      <div class="deliver-status" id="pastor-status" aria-live="polite"></div>
+
+      <button class="ghost-btn" onclick="App.reset()">처음부터 다시 하기</button>
+    </div>
+  </section>
+
+</main>
+<footer>11월 22일 마태복음 5:9 중고등부 설교를 바탕으로 제작</footer>
+
+<script>
+(function(){
+  "use strict";
+
+  // ---------- 설교/제출 설정 (매주 교체) ----------
+  var SERMON_DATE = "26년11월22일";
+  var FORM_ACTION = "https://docs.google.com/forms/d/e/1FAIpQLSfa4PJcpiJBWsfry2Lo1SUxiwKTtEh_V_AmPQ_6WRwOKeLYGg/formResponse";
+  var FORM_ENTRY = {
+    name: "entry.1626522824",
+    from: "entry.1380117152",
+    content: "entry.1763285252",
+    sermonDate: "entry.820953926",
+    submitDate: "entry.112201991",
+    // 폼에 "소속 반" 질문을 추가한 뒤, 그 질문의 entry ID를 여기에 채워주세요.
+    // 비워두면 "선생님께 전하기"에서 반 선택 칸이 나타나지 않고 기존처럼 동작합니다.
+    classField: ""
+  };
+  // Apps Script를 웹 앱으로 배포한 URL — 비워두면 "답장 확인하기" 버튼을 숨깁니다.
+  var REPLY_LOOKUP_URL = "https://script.google.com/macros/s/AKfycbxvfEu9qOLKcWhd_VyAFdJVOf7aRw8G0UV8jSmU5iM7QD-zgZC0qYgQJj1TRUWBoi3g/exec";
+
+  // 주소 끝에 ?test 를 붙이면 실제 전송 없이 화면만 확인할 수 있어요 (미리보기용)
+  var TEST_MODE = /[?&]test(=|&|$)/.test(location.search);
+
+  // ---------- 순서배열 2단계 (매주 교체) ----------
+  // cards는 '정답 순서'대로 적어요. 화면에서는 자동으로 섞여요.
+  var ROUNDS = [
+    {
+      eyebrow: "1단계 · 화평은 어디서 올까?",
+      title: "예수님이 먼저 이루신 화해",
+      flavor: "<b>질문:</b> 평화는 우리가 노력하기 전에 이미 시작된 일이에요. 하나님과 우리 사이의 평화는 어떤 순서로 이루어졌을까요?",
+      cards: [
+        "사람이 하나님을 떠나 내 욕심과 이익대로 살면서, 하나님과의 관계가 깨졌다.",
+        "예수님이 하나님과 우리 사이를 화해시키는 중보자로 이 땅에 오셨다.",
+        "예수님이 십자가에서 우리가 관계를 깨뜨린 책임을 대신 지셨다.",
+        "예수님이 다시 살아나셔서 깨어진 관계를 바로잡으셨다.",
+        "예수님을 믿는 우리가 하나님의 자녀가 되어, 평화를 이루는 사람으로 부르심을 받았다."
+      ],
+      hint: "먼저 관계가 깨졌고, 그다음에 해결하러 오신 분이 계세요. 십자가 다음에는 부활이에요.",
+      takeaway: "예수님이 <b>먼저</b> 화해를 이루셨기에,<br>우리도 화평을 이루는 하나님의 자녀가 될 수 있어요."
+    },
+    {
+      eyebrow: "2단계 · 내가 화평을 이루려면?",
+      title: "평화가 깨졌을 때, 나의 순서",
+      flavor: "<b>상황:</b> 친구가 나에 대해 이상한 말을 했다는 이야기를 들었어요. 화도 나고 억울해요. 그냥 손절할까요, 바로 따지러 갈까요? 예수님을 따르는 순서를 맞춰 보세요.",
+      cards: [
+        "나에 대한 말을 들었다. 화가 나고 억울한 마음이 든다.",
+        "바로 따지러 가지 않고, 한 템포 늦춘다.",
+        "먼저 하나님께 가서 내 마음을 털어놓고 기도한다.",
+        "기도하다 보니 용서받은 내 죄가 떠올라 회개하고, 그 친구를 이해해 보기로 한다.",
+        "믿을 수 있는 신앙 공동체와 나누되, 험담이 되지 않도록 지혜를 구한다.",
+        "화평하게 하는 사람으로 살도록 함께 기도하며, 화해를 실천한다."
+      ],
+      hint: "'한 템포 쉬기 → 하나님께 → 믿을 만한 사람들과 → 함께 기도하며 실천' 순서예요. 사람에게 가기 전에 하나님께 먼저 가요.",
+      takeaway: "하나님께 <b>먼저</b> 가면,<br>용서받은 은혜가 나를 화평을 이루는 사람으로 바꿔 줘요."
+    }
+  ];
+
+  var state = {
+    stage: 0,           // 0=인트로, 1=순서배열, 2=이름표, 3=완료
+    startedAt: null,
+    finishedAt: null,
+    round: 0,
+    roundsDone: 0,
+    slots: [],          // 각 칸에 올라간 카드(정답 번호), 비어 있으면 null
+    locked: [],         // 맞아서 고정된 칸
+    pool: [],           // 아직 올리지 않은 카드
+    attempts: 0,        // 이 단계에서 틀린 횟수
+    misses: 0,          // 전체 틀린 횟수
+    busy: false,
+    solved: false,
+    playerName: ""
+  };
+  var timerHandle = null;
+
+  function $(id){ return document.getElementById(id); }
+
+  function fmt(sec){
+    var m = Math.floor(sec/60), s = sec%60;
+    return (m<10?"0":"")+m+":"+(s<10?"0":"")+s;
+  }
+
+  function tick(){
+    if(!state.startedAt) return;
+    var sec = Math.floor((Date.now()-state.startedAt)/1000);
+    $("timer").textContent = fmt(sec);
+  }
+
+  // 처음부터 정답 순서가 되어 버리지 않도록 섞는다
+  function shuffledOrder(n){
+    var a = [], i, j, t;
+    for(i=0;i<n;i++) a.push(i);
+    do{
+      for(i=n-1;i>0;i--){
+        j = Math.floor(Math.random()*(i+1));
+        t = a[i]; a[i] = a[j]; a[j] = t;
+      }
+    }while(a.every(function(v,k){ return v === k; }));
+    return a;
+  }
+
+  function showScreen(n){
+    document.querySelectorAll(".screen").forEach(function(el){ el.classList.remove("active"); });
+    var map = {0:"screen-intro",1:"screen-1",2:"screen-2",3:"screen-3"};
+    $(map[n]).classList.add("active");
+    window.scrollTo({top:0, behavior:"smooth"});
+  }
+
+  function updateReadout(){
+    for(var i=0;i<ROUNDS.length;i++){
+      $("pd-"+i).classList.toggle("lit", i < state.roundsDone);
+    }
+    $("pair-readout").setAttribute("aria-label", "완성한 단계 " + state.roundsDone + " / " + ROUNDS.length);
+  }
+
+  // ---------- 1·2단계: 순서배열 ----------
+  function setStatus(text, kind){
+    var el = $("game-status");
+    el.textContent = text;
+    el.className = "game-status" + (kind ? " " + kind : "");
+  }
+
+  function updateCheck(){
+    var full = state.slots.every(function(v){ return v !== null; });
+    $("check-btn").classList.toggle("ready", full && !state.busy && !state.solved);
+  }
+
+  function renderRound(flags){
+    var R = ROUNDS[state.round];
+    var slotsEl = $("slots");
+    slotsEl.innerHTML = "";
+    state.slots.forEach(function(id, i){
+      var row = document.createElement("div");
+      row.className = "slot";
+      var num = document.createElement("span");
+      num.className = "snum";
+      num.textContent = String(i+1);
+      var box;
+      if(id === null){
+        box = document.createElement("div");
+        box.className = "sbox";
+        box.textContent = (i+1) + "번째 카드가 들어갈 자리";
+      } else {
+        box = document.createElement("button");
+        box.type = "button";
+        box.className = "sbox filled" + (state.locked[i] ? " locked" : "");
+        if(flags && flags[i] === "wrong") box.classList.add("wrong");
+        box.textContent = R.cards[id];
+        if(state.locked[i]){
+          box.setAttribute("aria-label", (i+1) + "번째, 맞은 카드: " + R.cards[id]);
+        } else {
+          box.setAttribute("aria-label", (i+1) + "번째 칸의 카드, 누르면 되돌리기: " + R.cards[id]);
+          (function(idx){ box.addEventListener("click", function(){ onSlotTap(idx); }); })(i);
+        }
+      }
+      row.appendChild(num);
+      row.appendChild(box);
+      slotsEl.appendChild(row);
+    });
+
+    var poolEl = $("pool");
+    poolEl.innerHTML = "";
+    if(state.pool.length === 0){
+      if(!state.solved){
+        var empty = document.createElement("div");
+        empty.className = "pool-empty";
+        empty.textContent = "카드를 모두 올렸어요. 확인하기를 눌러 주세요!";
+        poolEl.appendChild(empty);
+      }
+    } else {
+      state.pool.forEach(function(id){
+        var b = document.createElement("button");
+        b.type = "button";
+        b.className = "pcard";
+        b.textContent = R.cards[id];
+        b.addEventListener("click", function(){ onPoolTap(id); });
+        poolEl.appendChild(b);
+      });
+    }
+    updateCheck();
+  }
+
+  function startRound(r){
+    state.round = r;
+    var R = ROUNDS[r];
+    state.slots = R.cards.map(function(){ return null; });
+    state.locked = R.cards.map(function(){ return false; });
+    state.pool = shuffledOrder(R.cards.length);
+    state.attempts = 0;
+    state.busy = false;
+    state.solved = false;
+    $("round-eyebrow").textContent = R.eyebrow;
+    $("round-title").textContent = R.title;
+    $("round-flavor").innerHTML = R.flavor;
+    setStatus("카드를 눌러서 위에서부터 차례로 쌓아 보세요.");
+    $("reveal-round").classList.remove("show");
+    $("pool-label").style.display = "block";
+    $("pool").style.display = "flex";
+    $("tool-row").style.display = "flex";
+    $("check-btn").style.display = "inline-flex";
+    $("next-1").style.display = "none";
+    $("next-1").classList.remove("ready");
+    renderRound();
+    updateReadout();
+  }
+
+  function onPoolTap(id){
+    if(state.busy || state.solved) return;
+    var i;
+    for(i=0;i<state.slots.length;i++){ if(state.slots[i] === null) break; }
+    if(i >= state.slots.length) return;
+    state.slots[i] = id;
+    state.pool = state.pool.filter(function(v){ return v !== id; });
+    renderRound();
+  }
+
+  function onSlotTap(i){
+    if(state.busy || state.solved || state.locked[i] || state.slots[i] === null) return;
+    state.pool.push(state.slots[i]);
+    state.slots[i] = null;
+    renderRound();
+  }
+
+  function solveRound(){
+    var R = ROUNDS[state.round];
+    state.solved = true;
+    state.roundsDone = state.round + 1;
+    state.locked = state.locked.map(function(){ return true; });
+    state.pool = [];
+    renderRound();
+    updateReadout();
+    setStatus("🕊️ 순서를 모두 맞혔어요!", "good");
+    $("reveal-text").innerHTML = R.takeaway;
+    $("reveal-round").classList.add("show");
+    $("pool-label").style.display = "none";
+    $("pool").style.display = "none";
+    $("tool-row").style.display = "none";
+    $("check-btn").style.display = "none";
+    var last = state.round === ROUNDS.length - 1;
+    $("next-1").textContent = last ? "화평의 이름표 놓으러 가기 →" : "2단계로 →";
+    $("next-1").style.display = "inline-flex";
+    $("next-1").classList.add("ready");
+    setTimeout(function(){
+      $("reveal-round").scrollIntoView({behavior:"smooth", block:"center"});
+    }, 400);
+  }
+
+  // 이름 뒤에 붙는 호격 조사: 받침이 있으면 '아', 없으면 '야'
+  function callName(name){
+    var last = name.charAt(name.length-1);
+    var code = last.charCodeAt(0) - 0xAC00;
+    if(code >= 0 && code <= 11171){
+      return name + (code % 28 === 0 ? "야" : "아");
+    }
+    return name;
+  }
+
+  // ---------- 선생님/목사님께 전달 ----------
+  function nowKST(){
+    try{ return new Date().toLocaleString("ko-KR", { timeZone: "Asia/Seoul" }); }
+    catch(e){ return new Date().toString(); }
+  }
+  function submitToSheet(from, name, content, className){
+    if(TEST_MODE) return Promise.resolve();
+    var body = new URLSearchParams();
+    body.append(FORM_ENTRY.name, name);
+    body.append(FORM_ENTRY.from, from);
+    body.append(FORM_ENTRY.content, content);
+    body.append(FORM_ENTRY.sermonDate, SERMON_DATE + " 설교");
+    body.append(FORM_ENTRY.submitDate, nowKST());
+    if(FORM_ENTRY.classField && className) body.append(FORM_ENTRY.classField, className);
+    return fetch(FORM_ACTION, {
+      method: "POST",
+      mode: "no-cors",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: body.toString()
+    });
+  }
+  function copyText(text){
+    return new Promise(function(resolve){
+      if(navigator.clipboard && window.isSecureContext){
+        navigator.clipboard.writeText(text).then(function(){ resolve(true); }).catch(function(){ resolve(false); });
+        return;
+      }
+      try{
+        var ta = document.createElement("textarea");
+        ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+        document.body.appendChild(ta); ta.select();
+        var ok = document.execCommand("copy"); ta.remove();
+        resolve(ok);
+      }catch(e){ resolve(false); }
+    });
+  }
+
+  // 답장 확인 결과를 말풍선 두 개(내가 보낸 말 / 목사님 답장)로 그려줌
+  function buildChatRow(kind, label, text){
+    var row = document.createElement("div");
+    row.className = "chat-row " + kind;
+    var name = document.createElement("span");
+    name.className = "chat-name";
+    name.textContent = label;
+    var bubble = document.createElement("div");
+    bubble.className = "chat-bubble " + kind;
+    bubble.textContent = text; // textContent만 사용 — 학생이 적은 글자를 그대로, 안전하게 표시
+    row.appendChild(name);
+    row.appendChild(bubble);
+    return row;
+  }
+  // 혹시 서버 쪽에 [PIN:1234] 표시가 그대로 남아있어도, 화면에는 절대 보이지 않도록 한 번 더 걸러줌
+  function stripPinMarker(text){
+    if(!text) return text;
+    return text.replace(/\[PIN:\d{4}\]/g, "").replace(/\s+/g, " ").trim();
+  }
+  function buildDateDivider(dateText){
+    var d = document.createElement("div");
+    d.className = "chat-date";
+    d.textContent = dateText;
+    return d;
+  }
+  // 지금까지 주고받은 대화 전부(items)를 과거→최신 순서로 쌓아서, 카톡처럼 한 화면에서 보게 함
+  function renderReplyChat(items){
+    var chatEl = $("reply-chat");
+    chatEl.innerHTML = "";
+    (items || []).forEach(function(item){
+      if(item.date) chatEl.appendChild(buildDateDivider(item.date));
+      var cleanContent = stripPinMarker(item.content);
+      if(cleanContent){
+        chatEl.appendChild(buildChatRow("mine", "내가 보낸 말", cleanContent));
+      }
+      chatEl.appendChild(buildChatRow("reply", "목사님 답장", item.reply));
+    });
+    chatEl.style.display = "flex";
+  }
+
+  var App = {
+    start: function(){
+      state.startedAt = Date.now();
+      timerHandle = setInterval(tick, 1000);
+      state.stage = 1;
+      startRound(0);
+      showScreen(1);
+    },
+    goto: function(n){
+      state.stage = n;
+      showScreen(n);
+    },
+    hint: function(){
+      if(state.solved) return;
+      setStatus("💡 힌트: " + ROUNDS[state.round].hint, "tip");
+    },
+    shuffleRound: function(){
+      if(state.busy) return;
+      startRound(state.round);
+    },
+    check: function(){
+      if(state.busy || state.solved) return;
+      if(state.slots.some(function(v){ return v === null; })) return;
+      var n = state.slots.length, flags = [], right = 0, i;
+      for(i=0;i<n;i++){
+        if(state.slots[i] === i){ flags[i] = "right"; right++; } else { flags[i] = "wrong"; }
+      }
+      if(right === n){ solveRound(); return; }
+
+      state.attempts++;
+      state.misses++;
+      state.busy = true;
+      for(i=0;i<n;i++){ if(flags[i] === "right") state.locked[i] = true; }
+      var msg = right > 0
+        ? right + "개가 제자리에 있어요! 틀린 카드는 다시 골라 주세요."
+        : "아직 제자리에 맞는 카드가 없어요. 다시 도전!";
+      var kind = "bad";
+      if(state.attempts % 2 === 0){
+        msg += "\n💡 힌트: " + ROUNDS[state.round].hint;
+        kind = "tip";
+      }
+      setStatus(msg, kind);
+      renderRound(flags);
+      setTimeout(function(){
+        for(var k=0;k<state.slots.length;k++){
+          if(!state.locked[k] && state.slots[k] !== null){
+            state.pool.push(state.slots[k]);
+            state.slots[k] = null;
+          }
+        }
+        state.busy = false;
+        renderRound();
+      }, 900);
+    },
+    nextRound: function(){
+      if(state.round < ROUNDS.length - 1){
+        startRound(state.round + 1);
+        window.scrollTo({top:0, behavior:"smooth"});
+      } else {
+        this.goto(2);
+      }
+    },
+    sayName: function(){
+      var v = $("name-input").value.trim();
+      if(!v){
+        $("hint-4").textContent = "이름을 입력해주세요.";
+        $("name-input").focus();
+        return;
+      }
+      state.playerName = v;
+      var line = $("personal-line");
+      line.textContent = callName(v) + ", 예수님이 먼저 화해를 이루셨어. 이제 너도 화평을 이루는 하나님의 자녀야.";
+      line.classList.add("show");
+      $("hint-4").textContent = "";
+      $("next-2").classList.add("ready");
+    },
+    finish: function(){
+      if(!state.playerName.trim()) return;
+      state.finishedAt = Date.now();
+      if(timerHandle) clearInterval(timerHandle);
+      var sec = Math.max(0, Math.floor((state.finishedAt-state.startedAt)/1000));
+      $("final-time").textContent = fmt(sec);
+      $("final-misses").textContent = state.misses;
+      this.goto(3);
+      var pw = $("peace-wrap");
+      setTimeout(function(){ pw.classList.add("on"); }, 250);
+    },
+    toggleMore: function(){
+      var q = $("extra-q"), btn = $("more-btn");
+      var show = q.style.display === "none";
+      q.style.display = show ? "block" : "none";
+      btn.textContent = show ? "질문 접기 ↑" : "질문 한 가지 더 보기 ↓";
+    },
+    sendTo: function(target){
+      var isTeacher = target === "teacher";
+      var statusEl = $(isTeacher ? "teacher-status" : "pastor-status");
+      var noteEl = $(isTeacher ? "teacher-note" : "pastor-note");
+      var name = state.playerName.trim() || "이름 없음";
+      var note = noteEl.value.trim();
+      var className = "";
+      var pin = "";
+
+      if(isTeacher && FORM_ENTRY.classField){
+        className = $("class-select").value;
+        if(!className){
+          statusEl.textContent = "먼저 소속 반을 선택해주세요.";
+          $("class-select").focus();
+          return;
+        }
+      }
+
+      if(!note){
+        statusEl.textContent = (isTeacher ? "선생님" : "목사님") + "께 전하고 싶은 말이나 기도제목을 적어주면 보내드릴게!";
+        noteEl.focus();
+        return;
+      }
+
+      // 목사님께 보낼 때만: 답장 확인용 4자리 번호(선택). 적지 않으면 나중에 답장을 확인할 수 없음.
+      var pinEl = null;
+      if(!isTeacher){
+        pinEl = $("pastor-pin-input");
+        pin = pinEl.value.trim();
+        if(pin && !/^[0-9]{4}$/.test(pin)){
+          statusEl.textContent = "답장 확인 번호는 숫자 4자리로 입력해주세요.";
+          pinEl.focus();
+          return;
+        }
+      }
+
+      var sendContent = (!isTeacher && pin) ? (note + "\n[PIN:" + pin + "]") : note;
+
+      statusEl.textContent = "보내는 중...";
+      submitToSheet(isTeacher ? "선생님" : "목사님", name, sendContent, className)
+        .then(function(){
+          var doneMsg;
+          if(TEST_MODE){
+            doneMsg = "🧪 테스트 모드라서 실제로는 전송되지 않았어요.";
+          } else {
+            doneMsg = "✅ " + (isTeacher ? "선생님" : "목사님") + "께 전달했어요! ";
+            doneMsg += (!isTeacher && pin)
+              ? "답장은 '" + pin + "' 번호로 확인할 수 있어요."
+              : "확인하시고 연락 주실 거예요.";
+          }
+          statusEl.textContent = doneMsg;
+          noteEl.value = "";
+          if(pinEl) pinEl.value = "";
+        })
+        .catch(function(){
+          copyText("[" + (isTeacher ? "선생님" : "목사님") + "께] " + name + "\n" + note).then(function(ok){
+            statusEl.textContent = ok
+              ? "전송에 실패했어요(네트워크 확인). 대신 복사했으니 직접 전해줘 📋"
+              : "전송에 실패했어요. 와이파이/데이터 연결을 확인하고 다시 눌러줘.";
+          });
+        });
+    },
+    toggleReplyCheck: function(){
+      var panel = $("reply-check-panel");
+      var show = panel.style.display === "none";
+      panel.style.display = show ? "block" : "none";
+      if(show) $("reply-name-input").focus();
+    },
+    checkReply: function(){
+      var name = $("reply-name-input").value.trim();
+      var pin = $("reply-pin-input").value.trim();
+      var statusEl = $("reply-status");
+      var chatEl = $("reply-chat");
+      chatEl.style.display = "none";
+      chatEl.innerHTML = "";
+      if(!name){
+        statusEl.textContent = "이름을 입력해주세요.";
+        return;
+      }
+      if(pin && !/^[0-9]{4}$/.test(pin)){
+        statusEl.textContent = "확인 번호는 숫자 4자리여야 해요. 입력한 번호에 글자나 빠진 숫자가 없는지 다시 확인해주세요.";
+        $("reply-pin-input").focus();
+        return;
+      }
+      if(!REPLY_LOOKUP_URL){
+        statusEl.textContent = "아직 답장 확인 기능이 준비 중입니다.";
+        return;
+      }
+      statusEl.textContent = "확인하는 중...";
+      fetch(REPLY_LOOKUP_URL + "?name=" + encodeURIComponent(name) + "&pin=" + encodeURIComponent(pin))
+        .then(function(r){ return r.json(); })
+        .then(function(data){
+          if(data && data.found && data.items && data.items.length){
+            statusEl.textContent = "";
+            renderReplyChat(data.items);
+            return;
+          }
+          // 서버가 알려주는 이유(reason)에 따라 정확한 안내를 보여줌
+          var reason = data && data.reason;
+          var msg;
+          if(reason === "empty_name"){
+            msg = "이름을 입력해주세요.";
+          } else if(reason === "bad_pin_format"){
+            msg = "확인 번호는 숫자 4자리여야 해요. 입력한 번호를 다시 확인해주세요.";
+          } else if(reason === "no_name"){
+            msg = "이름을 정확히 입력해 주세요.";
+          } else if(reason === "pin_required"){
+            msg = "이름은 맞아요! 그런데 이 글은 확인 번호(4자리)가 필요해요. 보낼 때 입력했던 번호를 적어주세요.";
+          } else if(reason === "wrong_pin"){
+            msg = "이름은 맞는데 확인 번호가 달라요. 보낼 때 입력했던 4자리 번호를 다시 확인해주세요.";
+          } else if(reason === "no_reply_yet" || (!reason && data && data.matched)){
+            msg = "목사님이 확인 후 바로 답장을 주실 예정이니 조금만 기다려주세요.";
+          } else {
+            msg = "이름 또는 번호가 일치하지 않습니다."; // 구버전 서버 응답일 때의 기본 문구
+          }
+          statusEl.textContent = msg;
+        })
+        .catch(function(){
+          statusEl.textContent = "확인 중 오류가 발생했습니다. 인터넷 연결을 확인하고 다시 시도해주세요.";
+        });
+    },
+    reset: function(){
+      location.reload();
+    }
+  };
+  window.App = App;
+
+  // 링크를 열 때마다 항상 새 게임으로 시작 — 진행 상태를 저장하지 않음 (카드 순서도 매번 새로 섞임)
+  function boot(){
+    if(TEST_MODE) $("testbar").style.display = "block";
+    if(FORM_ENTRY.classField) $("class-field-wrap").style.display = "block";
+    if(!REPLY_LOOKUP_URL) $("check-reply-btn").style.display = "none";
+    updateReadout();
+    showScreen(0);
+  }
+
+  boot();
+})();
+</script>
+</body>
+</html>
