@@ -4,7 +4,8 @@
  * - 기존 피드백 서버(feedback_router.gs)와는 완전히 별개입니다. 건드리지 않습니다.
  * - 이 스크립트는 "새 구글 시트"에 붙여 넣습니다. (시트 메뉴 > 확장 프로그램 > Apps Script)
  * - 시트에 탭 3개가 자동으로 만들어집니다: 명단 / 설정 / 공격기록
- *     명단   : A열 이름, B열 반 (예: 홍길동 | 고1-1반)   ← 직접 채우세요. GitHub에 올리지 마세요.
+ *     명단   : (선택) 기존 '학생명단' 시트를 쓰지 않을 때만 A열 이름, B열 반을 직접 채웁니다.
+ *     설정   의 F1 칸: 기존 '학생명단' 시트의 ID를 넣으면 그 명단을 그대로 읽습니다. 학생 명단/ID는 GitHub에 올리지 마세요.
  *     설정   : 주차별 보스 최대 체력 (자동 생성, 필요하면 숫자만 고치세요)
  *     공격기록: 공격이 들어올 때마다 한 줄씩 쌓입니다.
  * - 규칙: (이름 + 주차) 1회만 반영, 보스당 공격력 상한 40, 같은 요청(rid) 중복 무시.
@@ -146,9 +147,26 @@ function readLog_() {
   return out;
 }
 
+/* 학생명단: 기존 '학생명단' 시트(이름,반)를 그대로 읽습니다.
+   설정 탭 F1 칸에 그 시트의 ID를 붙여 넣으면 됩니다. (비어 있으면 이 시트의 '명단' 탭을 씁니다)
+   ※ 시트 ID는 주소창의 /d/ 와 /edit 사이 긴 글자입니다. 이 ID는 GitHub에 올리지 않고 시트에만 둡니다. */
+var ROSTER_ID_CELL = "F1";
+
+function rosterValues_() {
+  var cfg = SpreadsheetApp.getActive().getSheetByName(SHEET_CONFIG);
+  var id = cfg ? String(cfg.getRange(ROSTER_ID_CELL).getValue() || "").trim() : "";
+  if (id) {
+    try {
+      return SpreadsheetApp.openById(id).getSheets()[0].getDataRange().getValues();
+    } catch (err) {
+      // 권한 오류 등: 아래 로컬 명단으로 대신 처리 (반은 '미확인'이 될 수 있음)
+    }
+  }
+  return SpreadsheetApp.getActive().getSheetByName(SHEET_ROSTER).getDataRange().getValues();
+}
+
 function findClass_(name) {
-  var sh = SpreadsheetApp.getActive().getSheetByName(SHEET_ROSTER);
-  var v = sh.getDataRange().getValues();
+  var v = rosterValues_();
   var key = normName_(name);
   for (var i = 1; i < v.length; i++) {
     if (normName_(String(v[i][0])) === key) return String(v[i][1] || "").trim();
