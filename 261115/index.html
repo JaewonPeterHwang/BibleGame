@@ -1,0 +1,1526 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>생명의 빵 식탁 | 말씀 카드매칭</title>
+<meta name="description" content="요한복음 6:51-58, 중고등부 말씀 카드매칭 게임">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@500;700&family=Noto+Sans+KR:wght@400;500;600;700&display=swap">
+<style>
+/* ============================================================
+   팔레트 — 예수님이 차려 주신 따뜻한 식탁 (다크 전용, 빵의 금빛 + 포도주빛)
+   레이아웃 — 중앙 1열. 12장의 카드를 뒤집어 6쌍의 말씀을 찾고(1단계),
+   성찬의 마음을 묻는 질문 3개에 답한 뒤(2단계), 본문 구절로 식탁이 완성된다(3단계).
+   ============================================================ */
+:root{
+  color-scheme: dark;
+  --bg: #120e0d;
+  --bg-glow: radial-gradient(ellipse 70% 55% at 50% -10%, #33241a 0%, #120e0d 58%);
+  --panel: #1d1715;
+  --panel-2: #271e1b;
+  --inset: #17120f;
+  --line: #3a2e29;
+  --fg: #f1e8dc;
+  --muted: #a6998d;
+  --muted-2: #7a6e64;
+  --accent: #e3a24b;
+  --accent-2: #f5c777;
+  --accent-dim: #8a6230;
+  --wine: #8f2f42;
+  --wine-2: #b44a60;
+  --danger: #cf7160;
+  --serif: "Noto Serif KR", "Nanum Myeongjo", serif;
+  --sans: "Noto Sans KR", -apple-system, "Pretendard", sans-serif;
+}
+*{box-sizing:border-box}
+html, body{ margin:0; padding:0; height:100%; }
+body{
+  min-height:100%;
+  background: var(--bg) var(--bg-glow);
+  background-repeat: no-repeat;
+  color: var(--fg);
+  font-family: var(--sans);
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-bottom: calc(32px + env(safe-area-inset-bottom, 0px));
+  -webkit-font-smoothing: antialiased;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+@media (prefers-reduced-motion: reduce){
+  *, *::before, *::after{
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ---------- 상단 고정 바 ---------- */
+.topbar{
+  position: sticky;
+  top: env(safe-area-inset-top, 0px);
+  z-index: 20;
+  margin: 0 -16px;
+  padding: 14px max(16px, env(safe-area-inset-left,0px)) 12px max(16px, env(safe-area-inset-right,0px));
+  background: linear-gradient(180deg, rgba(18,14,13,.97) 70%, rgba(18,14,13,0));
+  backdrop-filter: blur(2px);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+}
+.brand{
+  display:flex; align-items:center; gap:8px;
+  font-family: var(--serif);
+  font-weight:700;
+  font-size: 15px;
+  letter-spacing: .01em;
+  color: var(--accent-2);
+  white-space:nowrap;
+}
+.brand svg{ width:18px; height:18px; flex:none; }
+.pair-readout{
+  display:flex; align-items:center; gap:7px;
+  background: var(--inset);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 8px 14px;
+}
+.pdot{
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: var(--line);
+  transition: background .4s, box-shadow .4s, transform .4s;
+}
+.pdot.lit{
+  background: radial-gradient(circle at 35% 30%, var(--accent-2), var(--accent) 70%);
+  box-shadow: 0 0 10px rgba(245,199,119,.6);
+  transform: scale(1.12);
+}
+.timer{
+  font-variant-numeric: tabular-nums;
+  font-size: 13px;
+  color: var(--muted-2);
+  white-space: nowrap;
+}
+
+/* ---------- 레이아웃 ---------- */
+main{
+  max-width: 560px;
+  margin: 0 auto;
+  min-width: 0;
+}
+.screen{ display:none; }
+.screen.active{ display:block; animation: fadein .5s ease both; }
+@keyframes fadein{ from{opacity:0; transform:translateY(6px)} to{opacity:1; transform:translateY(0)} }
+
+.room-card{
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 26px 22px 24px;
+  margin-top: 18px;
+  box-shadow: 0 30px 60px -30px rgba(0,0,0,.6);
+  position: relative;
+  overflow:hidden;
+}
+.room-card::before{
+  content:"";
+  position:absolute; inset:0 0 auto 0; height:1px;
+  background: linear-gradient(90deg, transparent, var(--accent-dim), transparent);
+}
+@media (max-width: 400px){
+  .room-card{ padding: 22px 14px 20px; }
+}
+
+.room-eyebrow{
+  font-size: 12.5px;
+  letter-spacing: .14em;
+  color: var(--accent);
+  text-transform: uppercase;
+  font-weight:600;
+  display:flex; align-items:center; gap:8px;
+}
+.room-title{
+  font-family: var(--serif);
+  font-weight: 700;
+  font-size: clamp(22px, 6vw, 28px);
+  margin: 6px 0 14px;
+  text-wrap: balance;
+  line-height:1.3;
+}
+.flavor{
+  font-size: 14px;
+  line-height: 1.75;
+  color: var(--muted);
+  background: var(--inset);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--accent-dim);
+  border-radius: 10px;
+  padding: 12px 15px;
+  margin-bottom: 16px;
+}
+.flavor b{ color: var(--fg); font-weight:600; }
+.verse-ref{
+  display:inline-block;
+  margin-top:6px;
+  font-family: var(--serif);
+  font-size: 13px;
+  color: var(--accent-2);
+}
+
+.question{
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.6;
+  margin: 2px 0 14px;
+  text-wrap: balance;
+}
+
+/* ---------- 카드 매칭 ---------- */
+.game-status{
+  min-height: 40px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--muted);
+  margin: 0 0 10px;
+  padding: 0 2px;
+}
+.game-status.good{ color: var(--accent-2); font-weight:600; }
+.game-status.bad{ color: var(--danger); }
+.game-status.tip{
+  color: var(--fg);
+  background: var(--inset);
+  border: 1px solid var(--accent-dim);
+  border-radius: 10px;
+  padding: 8px 12px;
+}
+.card-grid{
+  display:grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+.mcard{
+  position: relative;
+  height: clamp(98px, 27vw, 124px);
+  padding: 0;
+  border: none;
+  background: none;
+  font-family: var(--sans);
+  color: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.mcard:active{ transform: scale(.97); }
+.mcard .face{
+  position:absolute; inset:0;
+  border-radius: 12px;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  text-align:center;
+  padding: 18px 6px 8px;
+}
+/* 뒷면: 문제 카드(금빛) / 답 카드(포도주빛) — 종류를 알 수 있어서 '하나씩' 골라 뒤집으면 됨 */
+.mcard .back.type-a{
+  background: linear-gradient(160deg, #3a2a17, #261b10);
+  border: 1px solid var(--accent-dim);
+  padding: 8px 6px;
+}
+.mcard .back.type-b{
+  background: linear-gradient(160deg, #46202b, #2b141b);
+  border: 1px solid #7a3446;
+  padding: 8px 6px;
+}
+.back-ico{ font-size: 26px; line-height:1; }
+.back-lbl{
+  margin-top: 8px;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  color: var(--muted);
+}
+.mcard .front{ display:none; background: var(--panel-2); border: 1px solid var(--line); }
+.mcard .front.type-a{ border-color: var(--accent-dim); }
+.mcard .front.type-b{ border-color: #7a3446; }
+.mcard.open .back{ display:none; }
+.mcard.open .front{ display:flex; animation: flipin .3s ease both; }
+@keyframes flipin{
+  from{ transform: perspective(500px) rotateY(90deg); opacity:.2; }
+  to{ transform: perspective(500px) rotateY(0); opacity:1; }
+}
+.mcard .tag{
+  position:absolute; top:6px; left:8px;
+  font-size: 9.5px;
+  font-weight:700;
+  letter-spacing:.06em;
+  color: var(--muted-2);
+}
+.mcard .front.type-a .tag{ color: var(--accent); }
+.mcard .front.type-b .tag{ color: var(--wine-2); }
+.ctext{
+  font-size: clamp(12px, 3.3vw, 14.5px);
+  font-weight: 600;
+  line-height: 1.45;
+  color: var(--fg);
+}
+.csub{
+  margin-top: 4px;
+  font-family: var(--serif);
+  font-size: 11px;
+  color: var(--accent-2);
+}
+.mcard.matched{ cursor: default; pointer-events:none; }
+.mcard.matched .front{
+  background: linear-gradient(180deg, rgba(227,162,75,.2), rgba(227,162,75,.06));
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent) inset, 0 0 18px rgba(245,199,119,.22);
+}
+.mcard.matched .front .tag{ color: var(--accent-2); }
+.mcard.nope .front{ border-color: var(--danger); animation: shake .4s; }
+@keyframes shake{
+  10%,90%{ transform: translateX(-2px) }
+  20%,80%{ transform: translateX(4px) }
+  30%,50%,70%{ transform: translateX(-7px) }
+  40%,60%{ transform: translateX(7px) }
+}
+
+.found-log{ margin-top: 18px; }
+.found-item{
+  background: var(--inset);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--accent);
+  border-radius: 10px;
+  padding: 11px 14px;
+  margin-bottom: 8px;
+  font-size: 13.5px;
+  line-height: 1.7;
+  color: var(--muted);
+  animation: fadein .5s ease both;
+}
+.found-item b{ display:block; color: var(--accent-2); font-size: 13px; margin-bottom: 2px; }
+
+/* ---------- 선택지 / 열쇠 보상 ---------- */
+.options{ display:flex; flex-direction:column; gap:10px; }
+.opt-btn{
+  text-align:left;
+  width:100%;
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  color: var(--fg);
+  border-radius: 12px;
+  padding: 13px 16px;
+  font-size: 14.5px;
+  font-family: var(--sans);
+  line-height:1.5;
+  cursor:pointer;
+  transition: border-color .2s, background .2s, transform .15s;
+}
+.opt-btn:hover{ border-color: var(--accent-dim); }
+.opt-btn:active{ transform: scale(.985); }
+.opt-btn.correct{
+  border-color: var(--accent);
+  background: linear-gradient(180deg, rgba(227,162,75,.16), rgba(227,162,75,.05));
+  box-shadow: 0 0 0 1px var(--accent) inset;
+}
+.opt-btn.wrong{
+  border-color: var(--danger);
+  animation: shake .4s;
+}
+.opt-btn[disabled]{ cursor:default; }
+.opt-btn[disabled]:not(.correct){ opacity:.55; }
+
+.hint{
+  min-height: 20px;
+  font-size: 13px;
+  color: var(--danger);
+  margin-top: 10px;
+}
+.qblock{ display:none; }
+.qblock.show{ display:block; animation: fadein .5s ease both; }
+.qblock + .qblock{ margin-top: 26px; padding-top: 22px; border-top: 1px solid var(--line); }
+.q-title{
+  font-family: var(--serif);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--accent-2);
+  margin-bottom: 8px;
+}
+
+.key-reveal{
+  display:none;
+  align-items:center;
+  gap:14px;
+  margin-top: 16px;
+  padding: 14px 16px;
+  background: var(--inset);
+  border: 1px solid var(--accent-dim);
+  border-radius: 12px;
+}
+.key-reveal.show{ display:flex; animation: fadein .5s ease both; }
+.key-num{
+  flex:none;
+  width: 48px; height: 48px;
+  border-radius: 50%;
+  display:flex; align-items:center; justify-content:center;
+  font-size: 22px;
+  background: radial-gradient(circle at 35% 30%, var(--accent-2), var(--accent) 70%);
+  box-shadow: 0 0 22px rgba(245,199,119,.5);
+}
+.key-text{ font-size: 13.5px; color: var(--muted); line-height:1.6; }
+.key-text b{ color: var(--accent-2); }
+
+/* ---------- 버튼 ---------- */
+.primary-btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:8px;
+  width:100%;
+  margin-top: 20px;
+  background: linear-gradient(180deg, var(--accent-2), var(--accent));
+  color: #1f1408;
+  font-family: var(--sans);
+  font-weight: 700;
+  font-size: 15px;
+  border: none;
+  border-radius: 12px;
+  padding: 14px 18px;
+  cursor:pointer;
+  opacity: .35;
+  pointer-events: none;
+  transition: opacity .3s, transform .15s;
+}
+.primary-btn.ready{ opacity:1; pointer-events:auto; }
+.primary-btn:active.ready{ transform: scale(.98); }
+.ghost-btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:8px;
+  width:100%;
+  margin-top: 10px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 13.5px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 11px 16px;
+  cursor:pointer;
+}
+.secondary-btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:8px;
+  width:100%;
+  margin-top: 12px;
+  background: var(--panel-2);
+  color: var(--accent-2);
+  font-family: var(--sans);
+  font-weight: 700;
+  font-size: 14px;
+  border: 1.5px solid var(--accent-dim);
+  border-radius: 12px;
+  padding: 13px 16px;
+  cursor:pointer;
+  transition: transform .15s;
+}
+.secondary-btn:active{ transform: scale(.98); }
+
+/* ---------- 답장 확인: 말풍선 ---------- */
+.chat-wrap{
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+  margin-top:14px;
+}
+.chat-date{
+  align-self:center;
+  font-size:11px;
+  color: var(--muted-2);
+  background: var(--inset);
+  padding:3px 11px;
+  border-radius:10px;
+  margin: 6px 0 0;
+}
+.chat-row{ display:flex; flex-direction:column; max-width:100%; }
+.chat-row.mine{ align-items:flex-end; }
+.chat-row.reply{ align-items:flex-start; }
+.chat-name{
+  font-size:11px;
+  color: var(--muted);
+  margin-bottom:5px;
+  padding:0 4px;
+}
+.chat-bubble{
+  max-width: 88%;
+  padding: 11px 14px;
+  border-radius: 16px;
+  font-size: 13.5px;
+  line-height: 1.7;
+  white-space: pre-line;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+.chat-bubble.mine{
+  background: var(--panel-2);
+  color: var(--fg);
+  border: 1px solid var(--line);
+  border-bottom-right-radius: 4px;
+}
+.chat-bubble.reply{
+  background: linear-gradient(180deg, var(--accent-2), var(--accent));
+  color: #1f1408;
+  font-weight:600;
+  border-bottom-left-radius: 4px;
+}
+
+/* ---------- 인트로 ---------- */
+.intro-icon{
+  width: 110px; height: 80px;
+  margin: 10px auto 4px;
+  display:block;
+}
+.intro-wrap{ text-align:center; padding-top: 6px; }
+.intro-title{
+  font-family: var(--serif);
+  font-weight:700;
+  font-size: clamp(26px, 8vw, 34px);
+  margin: 14px 0 10px;
+  color: var(--fg);
+}
+.intro-sub{
+  font-size: 14.5px;
+  color: var(--muted);
+  line-height:1.8;
+  max-width: 420px;
+  margin: 0 auto 6px;
+}
+.intro-meta{
+  margin-top: 18px;
+  display:flex; justify-content:center; flex-wrap:wrap; gap:8px 18px;
+  font-size: 12.5px;
+  color: var(--muted-2);
+}
+.intro-meta span{ display:flex; align-items:center; gap:6px; }
+
+/* ---------- 이름표 / 입력 ---------- */
+.name-row{
+  display:flex; gap:8px; margin-bottom: 16px;
+}
+.name-row input{
+  flex:1; min-width:0;
+  background: var(--inset);
+  border: 1px solid var(--line);
+  color: var(--fg);
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-size: 15px;
+  font-family: var(--sans);
+}
+.name-row input:focus{ outline: 2px solid var(--accent-dim); outline-offset:1px; }
+.name-row button{
+  flex:none;
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  color: var(--accent-2);
+  border-radius: 10px;
+  padding: 0 16px;
+  font-weight:600;
+  cursor:pointer;
+}
+.field-label{
+  display:block;
+  font-size: 12.5px;
+  color: var(--muted);
+  font-weight:600;
+  margin-bottom:6px;
+}
+.field-input, .field-textarea{
+  width:100%;
+  background: var(--inset);
+  border: 1px solid var(--line);
+  color: var(--fg);
+  border-radius: 10px;
+  padding: 11px 13px;
+  font-size: 14px;
+  font-family: var(--sans);
+  margin-bottom: 12px;
+}
+.field-textarea{ resize:none; min-height: 76px; line-height:1.6; }
+.field-input:focus, .field-textarea:focus{ outline: 2px solid var(--accent-dim); outline-offset:1px; }
+select.field-input{
+  appearance:none;
+  -webkit-appearance:none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23a6998d' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;
+  background-position: right 12px center;
+  background-size: 18px;
+  padding-right: 36px;
+}
+select.field-input option{ background: var(--panel); color: var(--fg); }
+.deliver-btn{
+  width:100%;
+  background: linear-gradient(180deg, var(--accent-2), var(--accent));
+  color:#1f1408;
+  font-weight:700;
+  font-size:14.5px;
+  font-family: var(--sans);
+  border:none;
+  border-radius: 10px;
+  padding: 12px 16px;
+  cursor:pointer;
+}
+.deliver-btn:active{ transform: scale(.98); }
+.deliver-status{
+  min-height:18px;
+  text-align:center;
+  font-size:12.5px;
+  color: var(--accent-2);
+  margin-top:8px;
+  line-height:1.6;
+  white-space: pre-line;
+}
+.deliver-note{
+  font-size:13px;
+  color: var(--muted);
+  line-height:1.6;
+  margin: -4px 0 14px;
+}
+
+.personal-line{
+  display:none;
+  font-family: var(--serif);
+  font-size: 17px;
+  line-height: 1.7;
+  color: var(--accent-2);
+  text-align:center;
+  padding: 14px;
+  margin-bottom: 16px;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+.personal-line.show{ display:block; animation: fadein .5s ease both; }
+
+/* ---------- 식탁 완성 ---------- */
+.table-wrap{
+  position:relative;
+  margin: 4px 0 20px;
+  border-radius: 14px;
+  overflow:hidden;
+  background: radial-gradient(ellipse at 50% 55%, #4a3114 0%, #120e0d 72%);
+  padding: 10px 0 4px;
+}
+.table-wrap svg{ display:block; width:100%; height:auto; }
+.table-wrap .item{ opacity:0; transform: translateY(10px); transition: opacity 1s ease, transform 1s ease; }
+.table-wrap.on .item{ opacity:1; transform: translateY(0); }
+.table-wrap.on .item.cup{ transition-delay: .5s; }
+.table-wrap .item{ transform-box: fill-box; }
+.table-glow{
+  text-align:center;
+  font-family: var(--serif);
+  color: var(--accent-2);
+  font-size: 13px;
+  letter-spacing: .1em;
+  padding: 2px 0 10px;
+}
+
+.final-verse{
+  font-family: var(--serif);
+  font-size: 17px;
+  line-height: 1.9;
+  color: var(--fg);
+  text-align:center;
+  padding: 4px 2px 6px;
+}
+.final-verse p{ margin: 0 0 10px; }
+.final-verse sup{ font-family: var(--sans); font-size: 10.5px; color: var(--muted-2); margin-right: 4px; }
+.final-verse b{ color: var(--accent-2); }
+.final-ref{
+  text-align:center;
+  font-size: 13px;
+  color: var(--accent);
+  margin-top: 2px;
+  margin-bottom: 18px;
+}
+.divider{
+  height:1px;
+  background: linear-gradient(90deg, transparent, var(--line), transparent);
+  margin: 18px 0;
+}
+.section-label{
+  font-size: 12px;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  color: var(--muted-2);
+  font-weight:700;
+  margin-bottom:10px;
+}
+.reflect-q{
+  font-size: 14px;
+  line-height:1.7;
+  color: var(--muted);
+  margin-bottom:10px;
+  padding-left: 18px;
+  position:relative;
+}
+.reflect-q::before{
+  content: "·";
+  position:absolute; left:4px; top:0;
+  color: var(--accent);
+  font-weight:900;
+}
+.more-link{
+  background:none; border:none;
+  color: var(--accent);
+  font-size: 13px;
+  font-weight:600;
+  cursor:pointer;
+  padding: 4px 0;
+}
+.stat-row{
+  display:flex; justify-content:center; gap:22px;
+  margin: 18px 0 4px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.stat-row b{
+  display:block; font-family: var(--serif); font-size: 20px; color: var(--accent-2);
+  font-variant-numeric: tabular-nums;
+  text-align:center;
+}
+.stat-row > div{ text-align:center; }
+footer{
+  text-align:center;
+  color: var(--muted-2);
+  font-size: 12px;
+  margin-top: 28px;
+  padding-bottom: 6px;
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    <svg viewBox="0 0 24 24" fill="none"><ellipse cx="12" cy="13" rx="9" ry="6" fill="currentColor" opacity=".9"/><path d="M7 11l2 2M11 10l2 2M15 11l2 2" stroke="#120e0d" stroke-width="1.4" stroke-linecap="round"/></svg>
+    생명의 빵 식탁
+  </div>
+  <div class="pair-readout" id="pair-readout" role="img" aria-label="찾은 짝 0 / 6">
+    <span class="pdot" id="pd-0"></span><span class="pdot" id="pd-1"></span><span class="pdot" id="pd-2"></span><span class="pdot" id="pd-3"></span><span class="pdot" id="pd-4"></span><span class="pdot" id="pd-5"></span>
+  </div>
+  <div class="timer" id="timer">00:00</div>
+</div>
+
+<main>
+
+  <!-- ===================== 0. 인트로 ===================== -->
+  <section class="screen active" id="screen-intro">
+    <div class="room-card intro-wrap">
+      <svg class="intro-icon" viewBox="0 0 110 80" fill="none" aria-hidden="true">
+        <defs>
+          <radialGradient id="gb" cx="40%" cy="30%" r="75%">
+            <stop offset="0%" stop-color="#f5c777"/>
+            <stop offset="100%" stop-color="#a96a28"/>
+          </radialGradient>
+        </defs>
+        <ellipse cx="55" cy="68" rx="46" ry="6" fill="#000" opacity=".35"/>
+        <ellipse cx="55" cy="46" rx="34" ry="19" fill="url(#gb)"/>
+        <path d="M36 38l8 7M50 33l8 7M64 38l8 7" stroke="#7a4a1a" stroke-width="2.4" stroke-linecap="round"/>
+      </svg>
+      <div class="room-eyebrow" style="justify-content:center">중고등부 말씀 카드매칭</div>
+      <div class="intro-title">생명의 빵 식탁</div>
+      <p class="intro-sub">
+        예수님이 차려 주신 식탁에 초대받았습니다. 식탁 위에는 <b style="color:var(--accent-2)">12장의 카드</b>가
+        엎어져 있어요. 📖 문제 카드 하나, 🍞 답 카드 하나를 뒤집어 서로 짝이 되는 말씀을 찾아보세요.
+      </p>
+      <p class="intro-sub">여섯 쌍을 모두 찾으면 성찬의 마음을 묻는 질문이 기다리고 있어요.</p>
+      <p class="intro-sub">틀려도 괜찮아요. 세 번 틀릴 때마다 힌트를 드려요.</p>
+      <div class="intro-meta">
+        <span>🃏 카드 12장 · 6쌍</span>
+        <span>⏱ 약 7분</span>
+        <span>📖 요한복음 6:51-58</span>
+      </div>
+      <button class="primary-btn ready" onclick="App.start()">식탁에 앉기 →</button>
+      <button class="secondary-btn" id="check-reply-btn" onclick="App.toggleReplyCheck()">💬 목사님께 답장이 왔는지 확인하기</button>
+      <div id="reply-check-panel" style="display:none; margin-top:14px; text-align:left">
+        <label class="field-label" for="reply-name-input">이름</label>
+        <input class="field-input" id="reply-name-input" type="text" placeholder="내 이름을 정확히 입력해주세요" maxlength="12">
+        <label class="field-label" for="reply-pin-input">확인 번호 (4자리)</label>
+        <input class="field-input" id="reply-pin-input" type="text" inputmode="numeric" maxlength="4" placeholder="보낼 때 입력했던 4자리 번호 (번호 없이 보낸 예전 글은 비워두세요)">
+        <button class="deliver-btn" onclick="App.checkReply()">답장 확인</button>
+        <div class="deliver-status" id="reply-status" aria-live="polite"></div>
+        <div id="reply-chat" class="chat-wrap" style="display:none" aria-live="polite"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== 1. 카드 매칭 ===================== -->
+  <section class="screen" id="screen-1">
+    <div class="room-card">
+      <div class="room-eyebrow">1단계 · 짝 찾기</div>
+      <div class="room-title">식탁 위의 말씀 카드</div>
+      <div class="flavor">
+        📖 문제 카드와 🍞 답 카드를 <b>하나씩</b> 뒤집어, 뜻이 이어지는 짝을 찾으세요.
+        짝이 아니면 카드가 다시 덮이니 위치를 잘 기억해 두세요.
+      </div>
+      <div class="game-status" id="game-status" aria-live="polite">카드를 눌러 뒤집어 보세요.</div>
+      <div class="card-grid" id="card-grid"></div>
+
+      <div class="found-log" id="found-log" style="display:none">
+        <div class="section-label">찾은 말씀</div>
+        <div id="found-list"></div>
+      </div>
+
+      <button class="primary-btn" id="next-1" onclick="App.goto(2)">성찬의 마음으로 →</button>
+    </div>
+  </section>
+
+  <!-- ===================== 2. 성찬의 마음 ===================== -->
+  <section class="screen" id="screen-2">
+    <div class="room-card">
+      <div class="room-eyebrow">2단계 · 성찬의 마음</div>
+      <div class="room-title">식탁의 마지막 질문</div>
+
+      <div class="qblock show" id="qb-1">
+        <div class="q-title">질문 1 · 빵을 받을 때</div>
+        <div class="flavor">
+          식탁 위에 빵 한 덩이가 놓여 있습니다. 이 빵은 우리를 위해 내어주신 예수님의 <b>몸</b>을 기억하게 합니다.
+        </div>
+        <div class="question">성찬의 빵을 받을 때, 가장 어울리는 고백은 무엇일까요?</div>
+        <div class="options" id="opts-1">
+          <button class="opt-btn" data-correct="1">예수님, 나를 위해 자신의 몸을 내어주셔서 감사합니다</button>
+          <button class="opt-btn" data-correct="0">예수님, 이 빵으로 오늘 배고픔을 채워 주세요</button>
+          <button class="opt-btn" data-correct="0">예수님, 나는 열심히 했으니 이 빵을 받을 자격이 있어요</button>
+          <button class="opt-btn" data-correct="0">예수님, 이번 시험을 잘 보게 해 주세요</button>
+        </div>
+        <div class="hint" id="hint-1" aria-live="polite"></div>
+        <div class="key-reveal" id="reveal-1" aria-live="polite">
+          <div class="key-num">🍞</div>
+          <div class="key-text">찢기신 예수님의 몸은 원래 <b>내가</b> 찢겨야 할 것이었어요.<br>예수님이 나를 <b>대신</b>해 주셨습니다.</div>
+        </div>
+      </div>
+
+      <div class="qblock" id="qb-2">
+        <div class="q-title">질문 2 · 음료를 받을 때</div>
+        <div class="flavor">
+          이번에는 잔을 받습니다. 이 음료는 십자가에서 흘리신 예수님의 <b>피</b>를 기억하게 합니다.
+        </div>
+        <div class="question">성찬의 음료를 받을 때, 가장 어울리는 고백은 무엇일까요?</div>
+        <div class="options" id="opts-2">
+          <button class="opt-btn" data-correct="0">예수님, 제 잘못은 이번 한 번만 모른 척해 주세요</button>
+          <button class="opt-btn" data-correct="0">예수님, 이 음료로 기운이 나게 해 주세요</button>
+          <button class="opt-btn" data-correct="1">예수님, 나를 위해 피 흘리시고 나를 용서해 주셔서 감사합니다</button>
+          <button class="opt-btn" data-correct="0">예수님, 저는 죄가 별로 없지만 그래도 마십니다</button>
+        </div>
+        <div class="hint" id="hint-2" aria-live="polite"></div>
+        <div class="key-reveal" id="reveal-2" aria-live="polite">
+          <div class="key-num">🍇</div>
+          <div class="key-text">흘리신 물과 피는 원래 <b>내가</b> 흘려야 할 것이었어요.<br>그 피로 우리는 <b>용서</b>받고 구원을 얻었습니다.</div>
+        </div>
+      </div>
+
+      <div class="qblock" id="qb-3">
+        <div class="q-title">질문 3 · 이번 한 주</div>
+        <div class="flavor">
+          성찬을 한 이번 주, 우리는 예수님과 더욱 <b>하나가 되기</b>를 구하며 살아가려고 합니다.
+        </div>
+        <div class="question">예수님과 하나 되기 위해, 이번 주 가장 어울리는 실천은 무엇일까요?</div>
+        <div class="options" id="opts-3">
+          <button class="opt-btn" data-correct="0">성찬은 오늘 했으니, 이번 주는 말씀을 쉬어도 된다</button>
+          <button class="opt-btn" data-correct="0">예수님께 받고 싶은 것을 매일 적어서 구한다</button>
+          <button class="opt-btn" data-correct="1">매일 성경 한 구절씩 되새긴다 (주보의 암송구절)</button>
+          <button class="opt-btn" data-correct="0">주일에 한 번만 몰아서 읽으면 충분하다</button>
+        </div>
+        <div class="hint" id="hint-3" aria-live="polite"></div>
+        <div class="key-reveal" id="reveal-3" aria-live="polite">
+          <div class="key-num">📖</div>
+          <div class="key-text">우리 영혼에도 <b>날마다</b> 예수님이 필요해요.<br>이번 주 매일 한 구절씩, 가볍게 되새겨 보세요.</div>
+        </div>
+      </div>
+
+      <div class="qblock" id="qb-4">
+        <div class="q-title">식탁의 이름표</div>
+        <div class="flavor">
+          이 식탁은 예수님이 <b>나를 위해</b> 차려 주셨습니다. 식탁 자리에 이름표를 놓아 주세요.
+        </div>
+        <label class="field-label" for="name-input">당신의 이름 <span style="color:var(--danger)">*필수</span></label>
+        <div class="name-row">
+          <input id="name-input" type="text" placeholder="이름을 적어보세요" maxlength="12">
+          <button type="button" onclick="App.sayName()">놓기</button>
+        </div>
+        <div class="personal-line" id="personal-line" aria-live="polite"></div>
+        <div class="hint" id="hint-4" aria-live="polite"></div>
+      </div>
+
+      <button class="primary-btn" id="next-2" onclick="App.finish()">식탁을 완성하기 →</button>
+    </div>
+  </section>
+
+  <!-- ===================== 3. 식탁 완성 ===================== -->
+  <section class="screen" id="screen-3">
+    <div class="room-card">
+      <div class="room-eyebrow">식탁 완성</div>
+      <div class="room-title">생명의 빵이신 예수님</div>
+
+      <div class="table-wrap" id="table-wrap">
+        <svg viewBox="0 0 320 150" fill="none" aria-hidden="true">
+          <defs>
+            <radialGradient id="gb2" cx="40%" cy="30%" r="75%">
+              <stop offset="0%" stop-color="#f5c777"/>
+              <stop offset="100%" stop-color="#a96a28"/>
+            </radialGradient>
+            <linearGradient id="gc2" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#b44a60"/>
+              <stop offset="100%" stop-color="#6d2133"/>
+            </linearGradient>
+          </defs>
+          <rect x="28" y="108" width="264" height="12" rx="5" fill="#5e4129"/>
+          <rect x="44" y="120" width="10" height="22" rx="2" fill="#46301d"/>
+          <rect x="266" y="120" width="10" height="22" rx="2" fill="#46301d"/>
+          <g class="item bread">
+            <ellipse cx="108" cy="92" rx="52" ry="22" fill="url(#gb2)"/>
+            <path d="M80 82l10 8M100 77l10 8M120 82l10 8" stroke="#7a4a1a" stroke-width="3" stroke-linecap="round"/>
+          </g>
+          <g class="item cup">
+            <path d="M208 58h46l-6 34a17 17 0 0 1-34 0z" fill="url(#gc2)"/>
+            <rect x="228" y="92" width="6" height="12" fill="#c9a96a"/>
+            <rect x="214" y="102" width="34" height="6" rx="3" fill="#c9a96a"/>
+            <ellipse cx="231" cy="58" rx="23" ry="4" fill="#d9788c" opacity=".6"/>
+          </g>
+        </svg>
+        <div class="table-glow">예수님이 나를 위해 차려 주신 식탁</div>
+      </div>
+
+      <div class="final-verse">
+        <p><sup>54</sup>내 살을 먹고 내 피를 마시는 자는 <b>영생을 가졌고</b> 마지막 날에 내가 그를 다시 살리리니</p>
+        <p><sup>55</sup>내 살은 참된 양식이요 내 피는 참된 음료로다</p>
+        <p><sup>56</sup>내 살을 먹고 내 피를 마시는 자는 <b>내 안에 거하고 나도 그의 안에 거하나니</b></p>
+      </div>
+      <div class="final-ref">요한복음 6:54–56</div>
+
+      <div class="stat-row">
+        <div><b id="final-time">00:00</b>걸린 시간</div>
+        <div><b>6 / 6</b>찾은 짝</div>
+        <div><b id="final-moves">0</b>뒤집은 횟수</div>
+      </div>
+
+      <div class="divider"></div>
+      <div class="section-label">오늘, 나에게</div>
+      <p class="reflect-q">나는 예수님께 '얻고 싶은 것'과 '예수님 자신' 중, 평소 무엇에 더 관심이 있었나요?</p>
+      <p class="reflect-q">나를 대신해 몸이 찢기고 피 흘리신 예수님께, 오늘 어떤 말로 감사를 드리고 싶나요?</p>
+      <p class="reflect-q" id="extra-q" style="display:none">이번 주 매일 한 구절씩 되새기려면, 언제 어떤 방법으로 해볼 수 있을까요? (주보에 실린 암송구절)</p>
+      <button class="more-link" id="more-btn" onclick="App.toggleMore()">질문 한 가지 더 보기 ↓</button>
+
+      <div class="divider"></div>
+      <div class="section-label">선생님께 전하기</div>
+      <p class="deliver-note">오늘 느낀 점이나 나누고 싶은 기도제목을 적으면 선생님께 바로 전달됩니다.</p>
+      <div id="class-field-wrap" style="display:none">
+        <label class="field-label" for="class-select">소속 반 <span style="color:var(--danger)">*필수</span></label>
+        <select class="field-input" id="class-select">
+          <option value="">반을 선택하세요</option>
+          <option>중1-1반</option>
+          <option>중1-2반</option>
+          <option>중1-3반</option>
+          <option>중2-1반</option>
+          <option>중2-2반</option>
+          <option>중2-3반</option>
+          <option>중2-4반</option>
+          <option>중3-1반</option>
+          <option>중3-2반</option>
+          <option>중3-3반</option>
+          <option>고1-1반</option>
+          <option>고1-2반</option>
+          <option>고2반</option>
+          <option>고3-1반</option>
+          <option>고3-2반</option>
+          <option>일반교사(반 없음)</option>
+        </select>
+      </div>
+      <label class="field-label" for="teacher-note">나누고 싶은 이야기 · 기도제목</label>
+      <textarea class="field-textarea" id="teacher-note" placeholder="예: 나를 대신해 주신 예수님께 감사한 마음이 들었어요"></textarea>
+      <button class="deliver-btn" onclick="App.sendTo('teacher')">선생님께 보내기</button>
+      <div class="deliver-status" id="teacher-status" aria-live="polite"></div>
+
+      <div class="divider"></div>
+      <div class="section-label">목사님께 하고 싶은 말 · 기도제목</div>
+      <textarea class="field-textarea" id="pastor-note" placeholder="예: 목사님, 오늘 말씀 듣고 이런 생각이 들었어요... / 요즘 이런 기도제목이 있어요..."></textarea>
+      <label class="field-label" for="pastor-pin-input">답장 확인 번호 (선택, 4자리)</label>
+      <input class="field-input" id="pastor-pin-input" type="text" inputmode="numeric" maxlength="4" placeholder="나중에 답장을 확인하고 싶으면 숫자 4자리를 입력하세요">
+      <button class="deliver-btn" onclick="App.sendTo('pastor')">목사님께 보내기</button>
+      <div class="deliver-status" id="pastor-status" aria-live="polite"></div>
+
+      <button class="ghost-btn" onclick="App.reset()">처음부터 다시 하기</button>
+    </div>
+  </section>
+
+</main>
+<footer>11월 15일 요한복음 6:51–58 중고등부 설교를 바탕으로 제작</footer>
+
+<script>
+(function(){
+  "use strict";
+
+  // ---------- 설교/제출 설정 (매주 교체) ----------
+  var SERMON_DATE = "26년11월15일";
+  var FORM_ACTION = "https://docs.google.com/forms/d/e/1FAIpQLSfa4PJcpiJBWsfry2Lo1SUxiwKTtEh_V_AmPQ_6WRwOKeLYGg/formResponse";
+  var FORM_ENTRY = {
+    name: "entry.1626522824",
+    from: "entry.1380117152",
+    content: "entry.1763285252",
+    sermonDate: "entry.820953926",
+    submitDate: "entry.112201991",
+    // 폼에 "소속 반" 질문을 추가한 뒤, 그 질문의 entry ID를 여기에 채워주세요.
+    // 비워두면 "선생님께 전하기"에서 반 선택 칸이 나타나지 않고 기존처럼 동작합니다.
+    classField: ""
+  };
+  // Apps Script를 웹 앱으로 배포한 뒤 나오는 URL을 여기에 붙여넣으면
+  // "답장 확인하기" 기능이 켜집니다. 비워두면 버튼을 숨깁니다.
+  var REPLY_LOOKUP_URL = "https://script.google.com/macros/s/AKfycbxvfEu9qOLKcWhd_VyAFdJVOf7aRw8G0UV8jSmU5iM7QD-zgZC0qYgQJj1TRUWBoi3g/exec";
+
+  // ---------- 카드 6쌍 (설교 흐름 순서) ----------
+  // a = 문제 카드, b = 답 카드, title/note = 짝을 찾았을 때 보여줄 설교 요약, hint = 세 번 틀릴 때마다 주는 힌트
+  var PAIRS = [
+    { a:"성찬에서 빵과 음료", aSub:"",
+      b:"예수님의 찢긴 몸과 흘린 피",
+      title:"성찬의 빵과 음료",
+      note:"성찬의 빵은 예수님의 찢기신 몸을, 음료는 흘리신 피를 기억하게 해요. 우리에게 자신의 살과 피를 주신 예수님의 은혜를 기억하는 거룩한 식사예요.",
+      hint:"빵을 먹으며 '나를 위해 ○이 찢기셨구나', 음료를 마시며 '나를 위해 ○를 흘리셨구나' 하고 기억한다고 했어요." },
+    { a:"예수님은 어떤 빵이신가요?", aSub:"",
+      b:"생명을 주는 빵",
+      title:"생명의 빵",
+      note:"예수님은 하늘에서 내려온 살아 있는 떡, 곧 생명을 주는 빵이세요. 우리 몸에 날마다 밥이 필요하듯 우리 영혼에는 날마다 예수님이 필요해요. (요 6:51)",
+      hint:"우리 몸에 날마다 밥이 필요하듯, 우리 영혼에는 날마다 예수님이 필요하다고 했어요." },
+    { a:"영생을 얻는 길", aSub:"",
+      b:"예수님이 대신 지신 십자가를 믿음",
+      title:"영생을 얻는 길",
+      note:"예수님이 우리를 대신해 십자가에서 죄의 심판을 받으셨어요. 이 일을 믿음으로 받아들일 때 우리는 영생을 얻고 예수님과 하나가 돼요.",
+      hint:"원래 내가 받아야 했던 죄의 심판을 예수님이 어떻게 하셨는지 떠올려 보세요." },
+    { a:"내 살은 참된 양식이요", aSub:"요 6:55",
+      b:"내 피는 참된 음료로다",
+      title:"참된 양식, 참된 음료",
+      note:"예수님은 '내 살은 참된 양식이요 내 피는 참된 음료로다'라고 하셨어요. (요 6:55) 우리 영혼을 정말로 채워 주시는 분은 예수님이세요.",
+      hint:"예수님의 살은 양식이라고 했어요. 그럼 예수님의 피는 무엇에 해당할까요?" },
+    { a:"이번 주 우리의 실천", aSub:"",
+      b:"매일 암송구절 되새기기",
+      title:"이번 주 실천",
+      note:"성찬을 한 이번 주, 예수님과 더욱 하나 되기를 구하며 매일 주보에 실린 암송구절을 한 번씩 되새겨 보세요. 외우지 못해도 괜찮아요.",
+      hint:"주보에 매주 실리는 말씀이 있어요." },
+    { a:"예수님이 속상하신 이유", aSub:"",
+      b:"원하는 것만 구하고 영생엔 무관심",
+      title:"예수님의 속상한 마음",
+      note:"사람들은 기적과 필요한 것을 얻는 데는 관심이 많았지만, 예수님이 정말 주시려는 영생에는 관심이 없었어요. 그래서 예수님은 속상하셨고, 자신을 직접 내어주기로 하셨어요.",
+      hint:"예수님이 우리에게 주시고 싶은 가장 좋은 것은 무엇일까요?" }
+  ];
+
+  var QUIZ_WRONG = {
+    "1": "빵은 예수님의 '몸'을 기억하는 거예요. 나를 위해 예수님이 몸을 어떻게 하셨는지 떠올려 보세요.",
+    "2": "음료는 예수님의 '피'를 기억하는 거예요. 그 피로 우리에게 어떤 일이 일어났는지 떠올려 보세요.",
+    "3": "예수님이 우리에게 정말 주시고 싶으셨던 건 무엇이었나요? 예수님과 '하나 되는 것'에 관심을 두는 쪽을 골라 보세요."
+  };
+
+  var TOTAL = PAIRS.length;
+  var cards = [];
+  var state = {
+    stage: 0,           // 0=인트로, 1=카드매칭, 2=성찬의 마음, 3=완료
+    startedAt: null,
+    finishedAt: null,
+    found: 0,
+    moves: 0,           // 카드 두 장을 뒤집은 횟수
+    misses: 0,
+    hintCount: 0,
+    flipped: [],
+    lock: false,
+    solved: {1:false, 2:false, 3:false},
+    playerName: ""
+  };
+  var timerHandle = null;
+
+  function $(id){ return document.getElementById(id); }
+
+  function fmt(sec){
+    var m = Math.floor(sec/60), s = sec%60;
+    return (m<10?"0":"")+m+":"+(s<10?"0":"")+s;
+  }
+
+  function tick(){
+    if(!state.startedAt) return;
+    var sec = Math.floor((Date.now()-state.startedAt)/1000);
+    $("timer").textContent = fmt(sec);
+  }
+
+  function shuffle(arr){
+    for(var i=arr.length-1;i>0;i--){
+      var j = Math.floor(Math.random()*(i+1));
+      var t = arr[i]; arr[i] = arr[j]; arr[j] = t;
+    }
+    return arr;
+  }
+
+  function showScreen(n){
+    document.querySelectorAll(".screen").forEach(function(el){ el.classList.remove("active"); });
+    var map = {0:"screen-intro",1:"screen-1",2:"screen-2",3:"screen-3"};
+    $(map[n]).classList.add("active");
+    window.scrollTo({top:0, behavior:"smooth"});
+  }
+
+  function updateReadout(){
+    for(var i=0;i<TOTAL;i++){
+      $("pd-"+i).classList.toggle("lit", i < state.found);
+    }
+    $("pair-readout").setAttribute("aria-label", "찾은 짝 " + state.found + " / " + TOTAL);
+  }
+
+  // ---------- 1단계: 카드 매칭 ----------
+  function setStatus(text, kind){
+    var el = $("game-status");
+    el.textContent = text;
+    el.className = "game-status" + (kind ? " " + kind : "");
+  }
+
+  function buildCards(){
+    var list = [];
+    PAIRS.forEach(function(p, pi){
+      list.push({ pair: pi, type: "a", text: p.a, sub: p.aSub });
+      list.push({ pair: pi, type: "b", text: p.b, sub: "" });
+    });
+    cards = shuffle(list);
+    var grid = $("card-grid");
+    grid.innerHTML = "";
+    cards.forEach(function(c, idx){
+      var btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "mcard";
+      btn.setAttribute("aria-label", (c.type === "a" ? "문제 카드" : "답 카드") + " " + (idx+1) + "번, 뒤집기");
+
+      var back = document.createElement("span");
+      back.className = "face back type-" + c.type;
+      var ico = document.createElement("span");
+      ico.className = "back-ico";
+      ico.textContent = c.type === "a" ? "📖" : "🍞";
+      var lbl = document.createElement("span");
+      lbl.className = "back-lbl";
+      lbl.textContent = c.type === "a" ? "문제" : "답";
+      back.appendChild(ico); back.appendChild(lbl);
+
+      var front = document.createElement("span");
+      front.className = "face front type-" + c.type;
+      var tag = document.createElement("span");
+      tag.className = "tag";
+      tag.textContent = c.type === "a" ? "문제" : "답";
+      var txt = document.createElement("span");
+      txt.className = "ctext";
+      txt.textContent = c.text;
+      front.appendChild(tag); front.appendChild(txt);
+      if(c.sub){
+        var sub = document.createElement("span");
+        sub.className = "csub";
+        sub.textContent = c.sub;
+        front.appendChild(sub);
+      }
+
+      btn.appendChild(back); btn.appendChild(front);
+      btn.addEventListener("click", function(){ onCardTap(idx); });
+      c.el = btn; c.tagEl = tag; c.open = false; c.matched = false;
+      grid.appendChild(btn);
+    });
+  }
+
+  function openCard(i){
+    var c = cards[i];
+    c.open = true;
+    c.el.classList.add("open");
+    c.el.setAttribute("aria-label", (c.type === "a" ? "문제 카드: " : "답 카드: ") + c.text + (c.sub ? " (" + c.sub + ")" : ""));
+  }
+  function closeCard(i){
+    var c = cards[i];
+    c.open = false;
+    c.el.classList.remove("open", "nope");
+    c.el.setAttribute("aria-label", (c.type === "a" ? "문제 카드" : "답 카드") + " " + (i+1) + "번, 뒤집기");
+  }
+
+  function onCardTap(i){
+    if(state.lock || state.stage !== 1) return;
+    var c = cards[i];
+    if(c.matched || c.open) return;
+    openCard(i);
+    state.flipped.push(i);
+    if(state.flipped.length < 2){
+      setStatus("짝이 되는 카드를 하나 더 뒤집어 보세요.");
+      return;
+    }
+    state.lock = true;
+    state.moves++;
+    var ia = state.flipped[0], ib = state.flipped[1];
+    var a = cards[ia], b = cards[ib];
+    if(a.pair === b.pair && a.type !== b.type){
+      setTimeout(function(){ onMatch(ia, ib); }, 450);
+    } else {
+      setTimeout(function(){ onMismatch(ia, ib); }, 300);
+    }
+  }
+
+  function onMatch(ia, ib){
+    var a = cards[ia], b = cards[ib];
+    a.matched = b.matched = true;
+    state.found++;
+    [a, b].forEach(function(c){
+      c.el.classList.add("matched");
+      c.tagEl.textContent = "짝 " + state.found;
+    });
+    updateReadout();
+    addFoundNote(PAIRS[a.pair]);
+    state.flipped = [];
+    state.lock = false;
+    if(state.found === TOTAL){
+      setStatus("🍞 모든 짝을 찾았어요! 식탁에 말씀이 가득합니다.", "good");
+      $("next-1").classList.add("ready");
+      setTimeout(function(){
+        $("next-1").scrollIntoView({behavior:"smooth", block:"center"});
+      }, 500);
+    } else {
+      setStatus("짝을 찾았어요! (" + state.found + " / " + TOTAL + ")", "good");
+    }
+  }
+
+  function onMismatch(ia, ib){
+    state.misses++;
+    [ia, ib].forEach(function(i){ cards[i].el.classList.add("nope"); });
+    setTimeout(function(){
+      closeCard(ia); closeCard(ib);
+      state.flipped = [];
+      state.lock = false;
+      // 세 번 틀릴 때마다 아직 못 찾은 짝 중 하나의 힌트를 준다
+      if(state.misses % 3 === 0){
+        var left = [];
+        PAIRS.forEach(function(p, pi){
+          var done = cards.some(function(c){ return c.pair === pi && c.matched; });
+          if(!done) left.push(pi);
+        });
+        if(left.length){
+          var pick = left[state.hintCount % left.length];
+          state.hintCount++;
+          setStatus("💡 힌트: " + PAIRS[pick].hint, "tip");
+          return;
+        }
+      }
+      setStatus("짝이 아니에요. 어떤 카드였는지 기억해 두고 다시 도전!", "bad");
+    }, 850);
+  }
+
+  function addFoundNote(p){
+    $("found-log").style.display = "block";
+    var item = document.createElement("div");
+    item.className = "found-item";
+    var t = document.createElement("b");
+    t.textContent = p.title;
+    var n = document.createElement("span");
+    n.textContent = p.note;
+    item.appendChild(t); item.appendChild(n);
+    $("found-list").appendChild(item);
+  }
+
+  // ---------- 2단계: 성찬의 마음 질문 ----------
+  function shuffleChildren(wrap){
+    var kids = Array.prototype.slice.call(wrap.children);
+    shuffle(kids).forEach(function(k){ wrap.appendChild(k); });
+  }
+
+  function checkStage2Ready(){
+    var ready = state.solved[1] && state.solved[2] && state.solved[3] && !!state.playerName.trim();
+    $("next-2").classList.toggle("ready", ready);
+    if(state.solved[3] && !state.playerName.trim()){
+      $("hint-4").textContent = "이름을 넣고 '놓기' 버튼을 눌러주세요.";
+    } else if(ready){
+      $("hint-4").textContent = "";
+    }
+  }
+
+  function wireQuiz(n){
+    var wrap = $("opts-"+n);
+    var btns = wrap.querySelectorAll(".opt-btn");
+    btns.forEach(function(btn){
+      btn.addEventListener("click", function(){
+        if(wrap.dataset.solved) return;
+        if(btn.dataset.correct === "1"){
+          wrap.dataset.solved = "1";
+          btn.classList.add("correct");
+          btns.forEach(function(b){ b.disabled = true; });
+          $("hint-"+n).textContent = "";
+          state.solved[n] = true;
+          $("reveal-"+n).classList.add("show");
+          var next = $("qb-"+(n+1));
+          if(next){
+            setTimeout(function(){
+              next.classList.add("show");
+              next.scrollIntoView({behavior:"smooth", block:"start"});
+            }, 700);
+          }
+          checkStage2Ready();
+        } else {
+          btn.classList.add("wrong");
+          setTimeout(function(){ btn.classList.remove("wrong"); }, 420);
+          $("hint-"+n).textContent = QUIZ_WRONG[n];
+        }
+      });
+    });
+  }
+
+  // 이름 뒤에 붙는 호격 조사: 받침이 있으면 '아', 없으면 '야'
+  function callName(name){
+    var last = name.charAt(name.length-1);
+    var code = last.charCodeAt(0) - 0xAC00;
+    if(code >= 0 && code <= 11171){
+      return name + (code % 28 === 0 ? "야" : "아");
+    }
+    return name;
+  }
+
+  // ---------- 선생님/목사님께 전달 ----------
+  function nowKST(){
+    try{ return new Date().toLocaleString("ko-KR", { timeZone: "Asia/Seoul" }); }
+    catch(e){ return new Date().toString(); }
+  }
+  function submitToSheet(from, name, content, className){
+    var body = new URLSearchParams();
+    body.append(FORM_ENTRY.name, name);
+    body.append(FORM_ENTRY.from, from);
+    body.append(FORM_ENTRY.content, content);
+    body.append(FORM_ENTRY.sermonDate, SERMON_DATE + " 설교");
+    body.append(FORM_ENTRY.submitDate, nowKST());
+    if(FORM_ENTRY.classField && className) body.append(FORM_ENTRY.classField, className);
+    return fetch(FORM_ACTION, {
+      method: "POST",
+      mode: "no-cors",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: body.toString()
+    });
+  }
+  function copyText(text){
+    return new Promise(function(resolve){
+      if(navigator.clipboard && window.isSecureContext){
+        navigator.clipboard.writeText(text).then(function(){ resolve(true); }).catch(function(){ resolve(false); });
+        return;
+      }
+      try{
+        var ta = document.createElement("textarea");
+        ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+        document.body.appendChild(ta); ta.select();
+        var ok = document.execCommand("copy"); ta.remove();
+        resolve(ok);
+      }catch(e){ resolve(false); }
+    });
+  }
+
+  // 답장 확인 결과를 말풍선 두 개(내가 보낸 말 / 목사님 답장)로 그려줌
+  function buildChatRow(kind, label, text){
+    var row = document.createElement("div");
+    row.className = "chat-row " + kind;
+    var name = document.createElement("span");
+    name.className = "chat-name";
+    name.textContent = label;
+    var bubble = document.createElement("div");
+    bubble.className = "chat-bubble " + kind;
+    bubble.textContent = text; // textContent만 사용 — 학생이 적은 글자를 그대로, 안전하게 표시
+    row.appendChild(name);
+    row.appendChild(bubble);
+    return row;
+  }
+  // 혹시 서버 쪽에 [PIN:1234] 표시가 그대로 남아있어도, 화면에는 절대 보이지 않도록 한 번 더 걸러줌
+  function stripPinMarker(text){
+    if(!text) return text;
+    return text.replace(/\[PIN:\d{4}\]/g, "").replace(/\s+/g, " ").trim();
+  }
+  function buildDateDivider(dateText){
+    var d = document.createElement("div");
+    d.className = "chat-date";
+    d.textContent = dateText;
+    return d;
+  }
+  // 지금까지 주고받은 대화 전부(items)를 과거→최신 순서로 쌓아서, 카톡처럼 한 화면에서 보게 함
+  function renderReplyChat(items){
+    var chatEl = $("reply-chat");
+    chatEl.innerHTML = "";
+    (items || []).forEach(function(item){
+      if(item.date) chatEl.appendChild(buildDateDivider(item.date));
+      var cleanContent = stripPinMarker(item.content);
+      if(cleanContent){
+        chatEl.appendChild(buildChatRow("mine", "내가 보낸 말", cleanContent));
+      }
+      chatEl.appendChild(buildChatRow("reply", "목사님 답장", item.reply));
+    });
+    chatEl.style.display = "flex";
+  }
+
+  var App = {
+    start: function(){
+      state.startedAt = Date.now();
+      timerHandle = setInterval(tick, 1000);
+      this.goto(1);
+    },
+    goto: function(n){
+      state.stage = n;
+      showScreen(n);
+    },
+    sayName: function(){
+      var v = $("name-input").value.trim();
+      if(!v){
+        $("hint-4").textContent = "이름을 입력해주세요.";
+        $("name-input").focus();
+        return;
+      }
+      state.playerName = v;
+      var line = $("personal-line");
+      line.textContent = callName(v) + ", 이 식탁은 예수님이 너를 위해 차려 주셨어.";
+      line.classList.add("show");
+      checkStage2Ready();
+    },
+    finish: function(){
+      if(!(state.solved[1] && state.solved[2] && state.solved[3] && state.playerName.trim())) return;
+      state.finishedAt = Date.now();
+      if(timerHandle) clearInterval(timerHandle);
+      var sec = Math.max(0, Math.floor((state.finishedAt-state.startedAt)/1000));
+      $("final-time").textContent = fmt(sec);
+      $("final-moves").textContent = state.moves;
+      this.goto(3);
+      var tw = $("table-wrap");
+      setTimeout(function(){ tw.classList.add("on"); }, 250);
+    },
+    toggleMore: function(){
+      var q = $("extra-q"), btn = $("more-btn");
+      var show = q.style.display === "none";
+      q.style.display = show ? "block" : "none";
+      btn.textContent = show ? "질문 접기 ↑" : "질문 한 가지 더 보기 ↓";
+    },
+    sendTo: function(target){
+      var isTeacher = target === "teacher";
+      var statusEl = $(isTeacher ? "teacher-status" : "pastor-status");
+      var noteEl = $(isTeacher ? "teacher-note" : "pastor-note");
+      var name = state.playerName.trim() || "이름 없음";
+      var note = noteEl.value.trim();
+      var className = "";
+      var pin = "";
+
+      if(isTeacher && FORM_ENTRY.classField){
+        className = $("class-select").value;
+        if(!className){
+          statusEl.textContent = "먼저 소속 반을 선택해주세요.";
+          $("class-select").focus();
+          return;
+        }
+      }
+
+      if(!note){
+        statusEl.textContent = (isTeacher ? "선생님" : "목사님") + "께 전하고 싶은 말이나 기도제목을 적어주면 보내드릴게!";
+        noteEl.focus();
+        return;
+      }
+
+      // 목사님께 보낼 때만: 답장 확인용 4자리 번호(선택). 적지 않으면 나중에 답장을 확인할 수 없음.
+      var pinEl = null;
+      if(!isTeacher){
+        pinEl = $("pastor-pin-input");
+        pin = pinEl.value.trim();
+        if(pin && !/^[0-9]{4}$/.test(pin)){
+          statusEl.textContent = "답장 확인 번호는 숫자 4자리로 입력해주세요.";
+          pinEl.focus();
+          return;
+        }
+      }
+
+      var sendContent = (!isTeacher && pin) ? (note + "\n[PIN:" + pin + "]") : note;
+
+      statusEl.textContent = "보내는 중...";
+      submitToSheet(isTeacher ? "선생님" : "목사님", name, sendContent, className)
+        .then(function(){
+          var doneMsg = "✅ " + (isTeacher ? "선생님" : "목사님") + "께 전달했어요! ";
+          doneMsg += (!isTeacher && pin)
+            ? "답장은 '" + pin + "' 번호로 확인할 수 있어요."
+            : "확인하시고 연락 주실 거예요.";
+          statusEl.textContent = doneMsg;
+          noteEl.value = "";
+          if(pinEl) pinEl.value = "";
+        })
+        .catch(function(){
+          copyText("[" + (isTeacher ? "선생님" : "목사님") + "께] " + name + "\n" + note).then(function(ok){
+            statusEl.textContent = ok
+              ? "전송에 실패했어요(네트워크 확인). 대신 복사했으니 직접 전해줘 📋"
+              : "전송에 실패했어요. 와이파이/데이터 연결을 확인하고 다시 눌러줘.";
+          });
+        });
+    },
+    toggleReplyCheck: function(){
+      var panel = $("reply-check-panel");
+      var show = panel.style.display === "none";
+      panel.style.display = show ? "block" : "none";
+      if(show) $("reply-name-input").focus();
+    },
+    checkReply: function(){
+      var name = $("reply-name-input").value.trim();
+      var pin = $("reply-pin-input").value.trim();
+      var statusEl = $("reply-status");
+      var chatEl = $("reply-chat");
+      chatEl.style.display = "none";
+      chatEl.innerHTML = "";
+      if(!name){
+        statusEl.textContent = "이름을 입력해주세요.";
+        return;
+      }
+      if(pin && !/^[0-9]{4}$/.test(pin)){
+        statusEl.textContent = "확인 번호는 숫자 4자리여야 해요. 입력한 번호에 글자나 빠진 숫자가 없는지 다시 확인해주세요.";
+        $("reply-pin-input").focus();
+        return;
+      }
+      if(!REPLY_LOOKUP_URL){
+        statusEl.textContent = "아직 답장 확인 기능이 준비 중입니다.";
+        return;
+      }
+      statusEl.textContent = "확인하는 중...";
+      fetch(REPLY_LOOKUP_URL + "?name=" + encodeURIComponent(name) + "&pin=" + encodeURIComponent(pin))
+        .then(function(r){ return r.json(); })
+        .then(function(data){
+          if(data && data.found && data.items && data.items.length){
+            statusEl.textContent = "";
+            renderReplyChat(data.items);
+            return;
+          }
+          // 서버가 알려주는 이유(reason)에 따라 정확한 안내를 보여줌
+          var reason = data && data.reason;
+          var msg;
+          if(reason === "empty_name"){
+            msg = "이름을 입력해주세요.";
+          } else if(reason === "bad_pin_format"){
+            msg = "확인 번호는 숫자 4자리여야 해요. 입력한 번호를 다시 확인해주세요.";
+          } else if(reason === "no_name"){
+            msg = "이름을 정확히 입력해 주세요.";
+          } else if(reason === "pin_required"){
+            msg = "이름은 맞아요! 그런데 이 글은 확인 번호(4자리)가 필요해요. 보낼 때 입력했던 번호를 적어주세요.";
+          } else if(reason === "wrong_pin"){
+            msg = "이름은 맞는데 확인 번호가 달라요. 보낼 때 입력했던 4자리 번호를 다시 확인해주세요.";
+          } else if(reason === "no_reply_yet" || (!reason && data && data.matched)){
+            msg = "목사님이 확인 후 바로 답장을 주실 예정이니 조금만 기다려주세요.";
+          } else {
+            msg = "이름 또는 번호가 일치하지 않습니다."; // 구버전 서버 응답일 때의 기본 문구
+          }
+          statusEl.textContent = msg;
+        })
+        .catch(function(){
+          statusEl.textContent = "확인 중 오류가 발생했습니다. 인터넷 연결을 확인하고 다시 시도해주세요.";
+        });
+    },
+    reset: function(){
+      location.reload();
+    }
+  };
+  window.App = App;
+
+  // 링크를 열 때마다 항상 새 게임으로 시작 — 진행 상태를 저장하지 않음 (카드 위치·보기 순서도 매번 새로 섞임)
+  function boot(){
+    buildCards();
+    [1,2,3].forEach(function(n){
+      shuffleChildren($("opts-"+n));
+      wireQuiz(n);
+    });
+    updateReadout();
+    if(FORM_ENTRY.classField) $("class-field-wrap").style.display = "block";
+    if(!REPLY_LOOKUP_URL) $("check-reply-btn").style.display = "none";
+    showScreen(0);
+  }
+
+  boot();
+})();
+</script>
+</body>
+</html>
