@@ -151,8 +151,8 @@ main{max-width:560px;margin:0 auto;min-width:0}
 /* 2단계: 소문 차단 */
 #arena2{height:380px}
 .bub{position:absolute;top:0;width:31%;min-height:48px;padding:8px 10px;border-radius:14px;font-size:13px;line-height:1.4;cursor:pointer;display:flex;align-items:center;gap:6px;will-change:transform;user-select:none;-webkit-user-select:none}
-.bub.rumor{background:#3a1a22;border:1.5px solid var(--wine-2);color:#ffd9df}
-.bub.good{background:#14282e;border:1.5px solid var(--teal);color:#d9f5ff}
+/* 소문/좋은 말 모두 같은 모양·같은 색 → 색이 아니라 내용을 읽고 골라요 */
+.bub.rumor,.bub.good{background:#2e2b26;border:1.5px solid #75664b;color:var(--fg)}
 .bub .ic{font-size:18px;flex:none}
 .bub.gone{opacity:0;transform:scale(.6)!important;transition:opacity .2s,transform .2s;pointer-events:none}
 .danger-line{position:absolute;left:0;right:0;bottom:0;height:34px;background:linear-gradient(180deg,rgba(143,47,66,0),rgba(143,47,66,.55));border-top:1px dashed var(--wine-2);display:flex;align-items:center;justify-content:center;font-size:12px;color:#ffd9df;pointer-events:none}
@@ -299,7 +299,7 @@ footer{max-width:560px;margin:22px auto 0;text-align:center;font-size:12px;color
   <section class="screen" id="s-g2">
     <div class="hud"><span>📣 소문 차단</span><div class="tbar"><div id="g2-time"></div></div><b id="g2-score">0개</b></div>
     <div class="arena" id="arena2"><div class="danger-line">⚠️ 여기까지 내려오면 소문이 퍼져요</div></div>
-    <div class="hint-line">📣 빨간 소문만 탭! 💛 초록 좋은 말은 건드리지 않아요.</div>
+    <div class="hint-line">💬 내용을 읽고, 소문만 탭! 좋은 말은 건드리지 않아요.</div>
   </section>
 
   <!-- ============ 3단계 ============ -->
@@ -322,7 +322,7 @@ footer{max-width:560px;margin:22px auto 0;text-align:center;font-size:12px;color
       <div class="eyebrow">전투 종료</div>
       <h2 class="title" id="res-title">평화 메이커!</h2>
       <p class="sub" id="res-sub"></p>
-      <p class="sub" id="res-common" style="margin-top:6px">예수님을 믿는 우리는 하나님의 자녀예요. 예수님을 닮아 이번 주도 평화를 만들어 가요!</p>
+      <p class="sub" id="res-common" style="margin-top:6px">이번 주도 예수님을 닮아 평화를 만들어요!</p>
       <div class="stats">
         <div><b id="res-dmg">0</b>내 공격력</div>
         <div><b id="res-time">0:00</b>걸린 시간</div>
@@ -348,24 +348,24 @@ footer{max-width:560px;margin:22px auto 0;text-align:center;font-size:12px;color
         <p><b>화평하게 하는 자</b>는 복이 있나니<br>그들이 <b>하나님의 아들이라 일컬음을 받을 것임이요</b></p>
         <div class="ref">마태복음 5:9</div>
       </div>
-      <div class="section-label">오늘 말씀 한 줄 정리</div>
+      <div class="section-label">이번 주 말씀 한 줄 정리</div>
       <div class="takes">
         <div class="tk"><b>✂️ 손절하지 않기</b> — 예수님이 먼저 우리를 하나님과 화해시키셨어요. 그래서 우리도 불편하다고 끊지 않고 먼저 관계를 지켜요.</div>
         <div class="tk"><b>📣 소문을 끊기</b> — 직접 확인하지 않은 말은 전하지 않고 내 앞에서 끊어요. 평화는 입에서 시작돼요.</div>
         <div class="tk"><b>🕊️ 한 템포 늦추기</b> — 바로 따지지 않고 먼저 기도해요. 믿을 만한 사람과 지혜롭게 나눠요.</div>
       </div>
-      <div class="section-label">오늘, 나에게</div>
+      <div class="section-label">이번 주, 나에게</div>
       <p class="reflect">요즘 불편한 친구가 있나요? 예수님을 닮아 평화를 이루려면, 이번 주 내가 할 수 있는 일은 무엇일까요?</p>
       <p class="reflect">누가 나를 욕했다는 말을 들으면 어떻게 하나요? 이번 주엔 화내기 전에 먼저 기도해 보면 어떨까요?</p>
       <p class="reflect" style="font-size:13px;color:var(--muted)">평화는 무조건 참는 게 아니에요. 혼자 힘들면 믿을 수 있는 어른이나 선생님께 도움을 청해요.</p>
       <div class="section-label">선생님께 전하기</div>
-      <p class="note" style="margin:0 0 6px">오늘 느낀 점이나 나누고 싶은 기도제목을 적으면 선생님께 바로 전달돼요.</p>
+      <p class="note" style="margin:0 0 6px">이번 주 느낀 점이나 나누고 싶은 기도제목을 적으면 선생님께 바로 전달돼요.</p>
       <textarea class="field-textarea" id="tx-note" placeholder="예: 이번 주에 화해하고 싶은 친구가 있어요. 기도해 주세요"></textarea>
       <button class="deliver-btn" id="tx-send">선생님께 보내기</button>
       <div class="status" id="tx-status" aria-live="polite"></div>
 
       <div class="section-label" style="margin-top:22px">목사님께 하고 싶은 말 · 기도제목</div>
-      <textarea class="field-textarea" id="px-note" placeholder="예: 목사님, 오늘 말씀 듣고 이런 생각이 들었어요… / 요즘 이런 기도제목이 있어요…"></textarea>
+      <textarea class="field-textarea" id="px-note" placeholder="예: 목사님, 이번 주 말씀 듣고 이런 생각이 들었어요… / 요즘 이런 기도제목이 있어요…"></textarea>
       <label class="field-label" for="px-pin">답장 확인 번호 <span style="color:var(--muted-2)">(선택, 숫자 4자리)</span></label>
       <input class="field-input" id="px-pin" type="text" inputmode="numeric" maxlength="4" placeholder="나중에 답장을 확인하고 싶으면 4자리 숫자를 적어요">
       <button class="deliver-btn" id="px-send">목사님께 보내기</button>
@@ -435,8 +435,47 @@ var BOSS = {
   cut:  { id:"cut",  name:"손절 괴물", face:"👹", badge:"✂️", tag:"“안 맞으면 손절해. 정신건강에 좋아.”" },
   rumor:{ id:"rumor",name:"소문 괴물", face:"👻", badge:"📣", tag:"“너만 알고 있어~ 다들 아는 얘기인데.”" }
 };
-var RUMORS = ["걔 어제 싸웠대 ㅋㅋ","○○이 너 욕했대","걔 비밀인데 너만 알려줄게","직접 본 건 아닌데 걔가 그랬대","다들 걔가 그랬다던데?","걔 원래 그런 애잖아","걔 사고 쳐서 전학 간대 ㅋㅋ","걔 너 일부러 무시한 거래.","걔 손절당했대","걔가 너 빼고 만나자고 했대.","걔 비밀 단톡에 올릴까?","누가 그러던데 걔가 거짓말했대","걔 일부러 읽씹함;;","걔 뒷담 깠대","이거 퍼뜨려!","걔 빼고 단톡 만들자","확실한 건 아닌데 걔래","이거 캡처해서 뿌리자","걔랑 놀지 마 ㅋㅋ","걔 뒷담한 거 들었어?","걔 일부러 그런 거래"];
-var GOODS = ["고마워 😊","같이 할래?","괜찮아, 이해해","네 얘기 들어줄게","내가 먼저 사과할게","기도해 줄게 🙏","수고했어!","화해하자","잘했어 👍","괜찮니?","내가 직접 물어볼게","같이 밥 먹자","확실하지 않으면 말하지 말자","우리 같이 이야기해 보자","같이 해결해 보자","그 말은 여기서 멈추자","네 마음도 듣고 싶어","선생님께 도움을 요청하자"];
+var RUMORS = [
+    "○○이 너 욕했대",
+    "비밀인데 너만 알려줄게",
+    "직접 본 건 아닌데 그랬대",
+    "다들 그랬다던데?",
+    "○○가 원래 그런 애잖아",
+    "사고 쳐서 전학 간대 ㅋㅋ",
+    "너 일부러 무시한 거래",
+    "○○가 손절당했대",
+    "너 빼고 만난대",
+    "비밀 단톡에 올릴까?",
+    "누가 그러던데 거짓말했대",
+    "○○가 일부러 읽씹함;;",
+    "그 친구 뒷담 깠대",
+    "이거 퍼뜨려!",
+    "저 애 빼고 단톡 만들자",
+    "확실치 않은데 그 애래",
+    "이거 캡처해서 뿌리자",
+    "저 애랑 놀지 마 ㅋㅋ",
+    "뒷담한 거 들었어?",
+    "일부러 그런 거래"
+  ];
+var GOODS = [
+    "고마워, 덕분이야 😊",
+    "같이 할래? 재밌겠다",
+    "괜찮아, 이해해 ㅎㅎ",
+    "네 얘기 들어줄게",
+    "내가 먼저 사과할게",
+    "기도해 줄게 🙏",
+    "수고했어, 고마워!",
+    "화해하자",
+    "잘했어, 멋지다 👍",
+    "괜찮니? 같이 있을게",
+    "내가 직접 물어볼게",
+    "확실치 않으면 말하지 말자",
+    "우리 같이 이야기해 보자",
+    "같이 해결해 보자",
+    "그 말은 여기서 멈추자",
+    "네 마음도 듣고 싶어",
+    "선생님께 도움을 요청하자"
+  ];
 var SAYS_CUT = ["“그냥 손절할까…”","“연락 끊을까…”","“이제 못 참겠어”","“걔랑은 끝이야”","“말 섞기 싫어”"];
 var SAYS_SAVE = ["“다시 연결!”","“내가 먼저 할게”","“미안해, 화해하자”","“같이 풀어 보자”"];
 var FRIENDS = [["😀","🙂"],["😎","🤓"],["🥰","😊"],["🤠","😄"],["😺","😆"]];
@@ -690,7 +729,7 @@ var STAGES = {
       rules:["가위가 친구 사이의 <b>줄(=관계)을 자르려</b> 해요.","끊어지기 전에 <b>줄을 탭</b>해서 매듭을 지어요!","시간은 <b>30초</b>. 점점 빨라져요."] },
   2:{ icon:"📣👻", eyebrow:"2단계 · 소문 괴물", title:"소문을 차단하라!", boss:"rumor", prev:1,
       story:"이번엔 소문 괴물이에요. “너만 알고 있어~” 하며 확인되지 않은 말을 퍼뜨려요.",
-      rules:["<b>빨간 소문 말풍선</b>은 탭해서 차단!","<b>초록 좋은 말</b>은 건드리면 감점이에요.","소문이 맨 아래까지 내려오면 퍼져요. <b>30초</b>."] },
+      rules:["말풍선을 <b>읽고, 소문</b>이면 탭해서 차단!","<b>좋은 말</b>은 건드리면 감점이에요.","소문이 맨 아래까지 내려오면 퍼져요. <b>30초</b>."] },
   3:{ icon:"🕊️✨", eyebrow:"3단계 · 말씀 일격", title:"한 템포 참고, 말씀으로!", boss:"", prev:2,
       story:"내 욕을 들어도 바로 따지지 않아요! 한 템포 늦추고, 먼저 기도해요.",
       rules:["버튼을 <b>꾹 누른 채 3초를 참아요</b>.","<b>초록 구간(3.0~3.6초)</b>에서 손을 떼면 말씀 일격 완벽!","기회는 <b>2번</b>, 더 센 쪽이 적용돼요."] }
@@ -802,7 +841,7 @@ function runStage2(){
     var lane; do{ lane = Math.floor(Math.random()*3); }while(lane===lastLane && Math.random()<0.7); lastLane = lane;
     var isRumor = Math.random() < 0.66, type = isRumor ? "rumor" : "good";
     var node = el("div","bub "+type);
-    node.appendChild(el("span","ic", isRumor ? "📣" : "💛")); node.appendChild(el("span",null, pick(isRumor?RUMORS:GOODS)));
+    node.appendChild(el("span","ic","💬")); node.appendChild(el("span",null, pick(isRumor?RUMORS:GOODS)));
     var w = arena.clientWidth || 340; var x = lane*(w*0.3333)+ w*0.0133;
     node.style.left = x+"px"; node.style.visibility = "hidden"; arena.appendChild(node);
     var h = node.offsetHeight || 52;                       /* 글이 길면 말풍선이 더 커져요 → 실제 높이로 계산 */
@@ -1078,7 +1117,7 @@ function boot(){
   hb.addEventListener("contextmenu", function(e){ e.preventDefault(); });
   $("btn-retry").addEventListener("click", retry3);
   $("btn-final").addEventListener("click", finishGame);
-  $("btn-pray-only").addEventListener("click", function(){ openSheet("teacher", bossesDown(0,0) ? "함께 보스를 쓰러뜨려 줘서 고마워요. 감사한 마음이나 기도제목을 나눠 주세요." : "게임은 나중에 해도 괜찮아요. 바쁜 날엔 기도제목과 오늘 말씀을 듣고 든 생각만 보내 주세요."); });
+  $("btn-pray-only").addEventListener("click", function(){ openSheet("teacher", bossesDown(0,0) ? "함께 보스를 쓰러뜨려 줘서 고마워요. 감사한 마음이나 기도제목을 나눠 주세요." : "게임은 나중에 해도 괜찮아요. 바쁜 날엔 기도제목과 이번 주 말씀을 듣고 든 생각만 보내 주세요."); });
   $("pray-fab").addEventListener("click", function(){ openSheet(); });
   $("sheet-close").addEventListener("click", closeSheet);
   $("sheet-back").addEventListener("click", function(e){ if(e.target===$("sheet-back")) closeSheet(); });
